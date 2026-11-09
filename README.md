@@ -202,18 +202,22 @@ Go to **Vercel Dashboard** &rarr; Your Project &rarr; **Settings** &rarr; **Envi
 1. Log in to [Northflank](https://app.northflank.com/) and create a new **Project** (e.g. `lendloop-automation`).
 2. Click **Create Service** &rarr; **Deployment Service**.
 3. Select **Deployment source**: **External image**.
-4. Set image path: `docker.n8n.io/n8nio/n8n:latest`.
+4. Set image path: `n8nio/n8n:latest`.
 5. Under **Ports**, add port `5678` with HTTP protocol and enable public access.
 6. Under **Volumes**, attach a persistent volume (1 GB or larger) mounted at `/home/node/.n8n`.
 7. Under **Environment Variables**, add:
+   - `N8N_LISTEN_ADDRESS`: `0.0.0.0`
    - `N8N_HOST`: Your Northflank public domain (e.g., `n8n--lendloop.code.run`)
    - `N8N_PORT`: `5678`
-   - `N8N_PROTOCOL`: `https`
-   - `WEBHOOK_URL`: `https://<your-northflank-n8n-domain>/`
+   - `N8N_PROTOCOL`: `http`
+   - `N8N_EDITOR_BASE_URL`: `https://<your-northflank-n8n-domain>`
+   - `N8N_WEBHOOK_URL`: `https://<your-northflank-n8n-domain>/`
+   - `N8N_PROXY_HOPS`: `1`
+   - `N8N_RUNNERS_GRANT_TOKEN_TTL`: `120`
+   - `N8N_DIAGNOSTICS_ENABLED`: `false`
    - `N8N_WEBHOOK_SECRET`: Your shared HMAC secret string
    - `CONVEX_SITE_URL`: `https://<your-convex-deployment>.convex.site`
    - `NODE_FUNCTION_ALLOW_BUILTIN`: `crypto,buffer,util`
-   - `N8N_RUNNERS_ENABLED`: `true`
 8. Click **Deploy**. Once running, open the n8n interface and import the three workflows from `n8n/workflows/`.
 
 ---

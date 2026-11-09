@@ -5,13 +5,11 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "borrow-request",
-        "options": {
-          "rawBody": true
-        }
+        "options": {}
       },
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [220, 300],
       "id": "1d8a4a50-b492-41f2-b88a-21147a409f01",
       "webhookId": "lendloop-borrow-request"
@@ -28,24 +26,19 @@
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.eventType }}",
-        "rules": {
-          "rules": [
+        "conditions": {
+          "string": [
             {
-              "value2": "request_created",
-              "outputKey": "request_created"
-            },
-            {
-              "value2": "request_status_changed",
-              "outputKey": "request_status_changed"
+              "value1": "={{ $json.eventType }}",
+              "operation": "equal",
+              "value2": "request_created"
             }
           ]
         }
       },
       "name": "Route by Event Type",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3,
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
       "position": [660, 300],
       "id": "3f8c6c72-d614-43b4-b00c-43369c621b03"
     },
@@ -145,11 +138,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": true,
-    "errorWorkflow": "lendloop-error-handler"
+    "executionOrder": "v1"
   },
-  "active": true
+  "active": false
 }
-

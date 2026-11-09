@@ -35,16 +35,15 @@
             }
           ]
         },
-        "options": {
-          "retryOnFail": true,
-          "maxTries": 3,
-          "waitBetweenTries": 1000
-        }
+        "options": {}
       },
       "name": "Fetch Overdue Loans (Convex HTTP)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [440, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
       "id": "2b2b2b2b-2222-4222-b222-222222222222"
     },
     {
@@ -105,16 +104,15 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.rawBody }}",
-        "options": {
-          "retryOnFail": true,
-          "maxTries": 3,
-          "waitBetweenTries": 1500
-        }
+        "options": {}
       },
       "name": "Idempotent Write-Back to Convex",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [1320, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
       "id": "6f6f6f6f-6666-4666-f666-666666666666"
     }
   ],
@@ -176,11 +174,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": true,
-    "errorWorkflow": "lendloop-error-handler"
+    "executionOrder": "v1"
   },
-  "active": true
+  "active": false
 }
-
