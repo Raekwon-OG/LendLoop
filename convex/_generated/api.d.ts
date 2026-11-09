@@ -1,375 +1,65 @@
+/* eslint-disable */
 /**
- * Generated API definitions for Convex.
+ * Generated `api` utility.
  *
- * Generated automatically by convex codegen / npx convex dev.
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
  */
-import type { AnyApi, FunctionReference } from "convex/server";
 
-export declare const api: {
-  health: {
-    getHealth: FunctionReference<"query", "public", Record<string, never>, unknown>;
-  };
-  users: {
-    syncUser: FunctionReference<"mutation", "public", { preferredName?: string }, unknown>;
-    getCurrentUser: FunctionReference<"query", "public", Record<string, never>, unknown>;
-    getUserById: FunctionReference<"query", "public", { userId: string }, unknown>;
-    updateProfile: FunctionReference<"mutation", "public", { name: string }, unknown>;
-    setRole: FunctionReference<
-      "mutation",
-      "public",
-      { targetUserId: string; newRole: "user" | "admin" },
-      unknown
-    >;
-    setTrustedLender: FunctionReference<
-      "mutation",
-      "public",
-      { targetUserId: string; isTrustedLender: boolean },
-      unknown
-    >;
-    listUsers: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        clerkId: string;
-        name: string;
-        email: string;
-        role: "user" | "admin";
-        isTrustedLender: boolean;
-        createdAt: number;
-      }>
-    >;
-  };
-  tools: {
-    getAvailable: FunctionReference<
-      "query",
-      "public",
-      { category?: string },
-      Array<{
-        _id: string;
-        title: string;
-        description: string;
-        category: string;
-        condition: "Like New" | "Good" | "Fair";
-        status: string;
-        isAvailable: boolean;
-        createdAt: number;
-      }>
-    >;
-    getAvailableCategories: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{ name: string; count: number }>
-    >;
-    getMyTools: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        ownerId: string;
-        ownerClerkId: string;
-        title: string;
-        description: string;
-        category: string;
-        condition: "Like New" | "Good" | "Fair";
-        status: "available" | "borrowed" | "maintenance" | "archived";
-        createdAt: number;
-        updatedAt: number;
-      }>
-    >;
-    getToolById: FunctionReference<"query", "public", { toolId: string }, unknown>;
-    create: FunctionReference<
-      "mutation",
-      "public",
-      {
-        title: string;
-        description: string;
-        category: string;
-        condition: "Like New" | "Good" | "Fair";
-      },
-      string
-    >;
-    update: FunctionReference<
-      "mutation",
-      "public",
-      {
-        toolId: string;
-        title?: string;
-        description?: string;
-        category?: string;
-        condition?: "Like New" | "Good" | "Fair";
-        status?: "available" | "borrowed" | "maintenance" | "archived";
-      },
-      unknown
-    >;
-    remove: FunctionReference<"mutation", "public", { toolId: string }, { success: boolean; deletedToolId: string }>;
-    adminListAllTools: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        ownerId: string;
-        ownerClerkId: string;
-        title: string;
-        description: string;
-        category: string;
-        condition: "Like New" | "Good" | "Fair";
-        status: "available" | "borrowed" | "maintenance" | "archived";
-        createdAt: number;
-        updatedAt: number;
-        ownerName: string;
-        ownerEmail: string;
-        isOwnerTrusted: boolean;
-      }>
-    >;
-    adminRemoveTool: FunctionReference<
-      "mutation",
-      "public",
-      { toolId: string; reason?: string },
-      { success: boolean; deletedToolId: string; toolTitle: string }
-    >;
-  };
-  borrowRequests: {
-    create: FunctionReference<
-      "mutation",
-      "public",
-      {
-        toolId: string;
-        startDate: number;
-        endDate: number;
-        note?: string;
-      },
-      string
-    >;
-    approve: FunctionReference<
-      "mutation",
-      "public",
-      { requestId: string },
-      { success: boolean; loanId: string }
-    >;
-    decline: FunctionReference<
-      "mutation",
-      "public",
-      { requestId: string },
-      { success: boolean }
-    >;
-    cancel: FunctionReference<
-      "mutation",
-      "public",
-      { requestId: string },
-      { success: boolean }
-    >;
-    getMyRequests: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        toolId: string;
-        requesterId: string;
-        requesterClerkId: string;
-        ownerId: string;
-        ownerClerkId: string;
-        startDate: number;
-        endDate: number;
-        status: "pending" | "approved" | "declined" | "cancelled";
-        note?: string;
-        createdAt: number;
-        updatedAt: number;
-        toolTitle: string;
-        toolCategory: string;
-        toolCondition: string;
-        ownerName: string;
-        ownerEmail: string;
-      }>
-    >;
-    getIncomingRequests: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        toolId: string;
-        requesterId: string;
-        requesterClerkId: string;
-        ownerId: string;
-        ownerClerkId: string;
-        startDate: number;
-        endDate: number;
-        status: "pending" | "approved" | "declined" | "cancelled";
-        note?: string;
-        createdAt: number;
-        updatedAt: number;
-        toolTitle: string;
-        toolCategory: string;
-        requesterName: string;
-        requesterEmail: string;
-      }>
-    >;
-  };
-  loans: {
-    markReturned: FunctionReference<
-      "mutation",
-      "public",
-      { loanId: string },
-      { success: boolean }
-    >;
-    getMyActiveLoans: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        toolId: string;
-        borrowRequestId: string;
-        lenderId: string;
-        lenderClerkId: string;
-        borrowerId: string;
-        borrowerClerkId: string;
-        startDate: number;
-        dueDate: number;
-        returnedDate?: number;
-        status: "active" | "returned" | "overdue";
-        computedStatus: "active" | "returned" | "overdue";
-        createdAt: number;
-        toolTitle: string;
-        toolCategory: string;
-        borrowerName: string;
-        borrowerEmail: string;
-        lenderName: string;
-        lenderEmail: string;
-        isCallerLender: boolean;
-        lastReminderSentAt?: number;
-        reminderCount?: number;
-      }>
-    >;
-    getMyLoanHistory: FunctionReference<
-      "query",
-      "public",
-      Record<string, never>,
-      Array<{
-        _id: string;
-        toolId: string;
-        borrowRequestId: string;
-        lenderId: string;
-        lenderClerkId: string;
-        borrowerId: string;
-        borrowerClerkId: string;
-        startDate: number;
-        dueDate: number;
-        returnedDate?: number;
-        status: "active" | "returned" | "overdue";
-        computedStatus: "active" | "returned" | "overdue";
-        isOverdue: boolean;
-        createdAt: number;
-        toolTitle: string;
-        toolCategory: string;
-        borrowerName: string;
-        lenderName: string;
-        isCallerLender: boolean;
-      }>
-    >;
-    getAllLoans: FunctionReference<
-      "query",
-      "public",
-      { statusFilter?: string },
-      Array<{
-        _id: string;
-        toolId: string;
-        borrowRequestId: string;
-        lenderId: string;
-        lenderClerkId: string;
-        borrowerId: string;
-        borrowerClerkId: string;
-        startDate: number;
-        dueDate: number;
-        returnedDate?: number;
-        status: "active" | "returned" | "overdue";
-        computedStatus: "active" | "returned" | "overdue";
-        isOverdue: boolean;
-        createdAt: number;
-        toolTitle: string;
-        borrowerName: string;
-        borrowerEmail: string;
-        lenderName: string;
-        lenderEmail: string;
-        lastReminderSentAt?: number;
-        reminderCount?: number;
-      }>
-    >;
-  };
-  automations: {
-    getOverdueLoansForAutomation: FunctionReference<
-      "query",
-      "public",
-      { apiKey?: string },
-      Array<{
-        loanId: string;
-        toolTitle: string;
-        toolCategory: string;
-        borrowerName: string;
-        borrowerEmail: string;
-        dueDate: number;
-        daysOverdue: number;
-        lastReminderSentAt?: number;
-        reminderCount: number;
-      }>
-    >;
-    recordReminderWriteback: FunctionReference<
-      "mutation",
-      "public",
-      {
-        loanId: string;
-        idempotencyKey: string;
-        deliveredVia?: string;
-        signature?: string;
-      },
-      {
-        success: boolean;
-        alreadyProcessed: boolean;
-        message: string;
-        eventId: string;
-        reminderCount?: number;
-      }
-    >;
-    dispatchWebhookToN8n: FunctionReference<
-      "action",
-      "public",
-      {
-        endpointUrl: string;
-        eventType: string;
-        resourceId: string;
-        payload: string;
-      },
-      {
-        success: boolean;
-        status?: number;
-        attempts: number;
-        error?: string;
-      }
-    >;
-    getResourceAutomationHistory: FunctionReference<
-      "query",
-      "public",
-      { resourceId: string },
-      Array<{
-        _id: string;
-        eventType: string;
-        resourceId: string;
-        payload: string;
-        status: string;
-        idempotencyKey?: string;
-        attempts: number;
-        lastAttemptAt?: number;
-        createdAt: number;
-      }>
-    >;
-  };
-  [key: string]: unknown;
-};
+import type * as automations from "../automations.js";
+import type * as borrowRequests from "../borrowRequests.js";
+import type * as health from "../health.js";
+import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_hmac from "../lib/hmac.js";
+import type * as loans from "../loans.js";
+import type * as tools from "../tools.js";
+import type * as users from "../users.js";
 
-export declare const internal: AnyApi;
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+
+declare const fullApi: ApiFromModules<{
+  automations: typeof automations;
+  borrowRequests: typeof borrowRequests;
+  health: typeof health;
+  http: typeof http;
+  "lib/auth": typeof lib_auth;
+  "lib/hmac": typeof lib_hmac;
+  loans: typeof loans;
+  tools: typeof tools;
+  users: typeof users;
+}>;
+
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
+
+export declare const components: {};

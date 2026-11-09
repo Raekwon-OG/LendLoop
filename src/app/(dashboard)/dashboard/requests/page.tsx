@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -26,7 +27,7 @@ export default function MyRequestsPage() {
 
     setCancellingId(requestId);
     try {
-      await cancelMutation({ requestId: requestId as unknown as string });
+      await cancelMutation({ requestId: requestId as Id<"borrowRequests"> });
     } catch (err) {
       console.error("Failed to cancel request:", err);
       alert("Failed to cancel request. Please try again.");

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
 import {
   hasOverlappingActiveLoan,
@@ -104,27 +105,42 @@ export const create = mutation({
     });
 
     // Record webhook event queue entry for n8n automation
+    const owner = (await ctx.db.get(tool.ownerId)) as Doc<"users"> | null;
+    const createPayload = JSON.stringify({
+      eventType: "request_created",
+      requestId,
+      toolId: args.toolId,
+      toolTitle: tool.title,
+      requesterId: userRecord._id,
+      requesterName: userRecord.name,
+      requesterEmail: userRecord.email,
+      ownerId: tool.ownerId,
+      ownerClerkId: tool.ownerClerkId,
+      ownerEmail: owner?.email,
+      startDate: args.startDate,
+      endDate: args.endDate,
+      note: args.note?.trim(),
+    });
+
     await ctx.db.insert("automationEvents", {
       eventType: "request_created",
       resourceId: requestId,
-      payload: JSON.stringify({
-        requestId,
-        toolId: args.toolId,
-        toolTitle: tool.title,
-        requesterId: userRecord._id,
-        requesterName: userRecord.name,
-        requesterEmail: userRecord.email,
-        ownerId: tool.ownerId,
-        ownerClerkId: tool.ownerClerkId,
-        startDate: args.startDate,
-        endDate: args.endDate,
-        note: args.note?.trim(),
-      }),
+      payload: createPayload,
       status: "pending",
       idempotencyKey: `req_created_${requestId}`,
       attempts: 0,
       createdAt: now,
     });
+
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (webhookUrl && ctx.scheduler) {
+      await ctx.scheduler.runAfter(0, api.automations.dispatchWebhookToN8n, {
+        endpointUrl: webhookUrl,
+        eventType: "request_created",
+        resourceId: requestId,
+        payload: createPayload,
+      });
+    }
 
     return requestId;
   },
@@ -201,24 +217,44 @@ export const approve = mutation({
     });
 
     // 4. Queue automation event for n8n notification
+    const [approvedTool, borrower] = (await Promise.all([
+      ctx.db.get(request.toolId),
+      ctx.db.get(request.requesterId),
+    ])) as [Doc<"tools"> | null, Doc<"users"> | null];
+
+    const approvePayload = JSON.stringify({
+      eventType: "request_status_changed",
+      requestId: request._id,
+      loanId,
+      toolId: request.toolId,
+      toolTitle: approvedTool?.title,
+      borrowerEmail: borrower?.email,
+      newStatus: "approved",
+      lenderId: request.ownerId,
+      borrowerId: request.requesterId,
+      startDate: request.startDate,
+      dueDate: request.endDate,
+    });
+
     await ctx.db.insert("automationEvents", {
       eventType: "request_status_changed",
       resourceId: request._id,
-      payload: JSON.stringify({
-        requestId: request._id,
-        loanId,
-        toolId: request.toolId,
-        newStatus: "approved",
-        lenderId: request.ownerId,
-        borrowerId: request.requesterId,
-        startDate: request.startDate,
-        dueDate: request.endDate,
-      }),
+      payload: approvePayload,
       status: "pending",
       idempotencyKey: `req_approved_${request._id}_${now}`,
       attempts: 0,
       createdAt: now,
     });
+
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (webhookUrl && ctx.scheduler) {
+      await ctx.scheduler.runAfter(0, api.automations.dispatchWebhookToN8n, {
+        endpointUrl: webhookUrl,
+        eventType: "request_status_changed",
+        resourceId: request._id,
+        payload: approvePayload,
+      });
+    }
 
     await ctx.db.insert("automationEvents", {
       eventType: "loan_created",
@@ -277,21 +313,41 @@ export const decline = mutation({
     });
 
     // Queue automation event for notification
+    const [declinedTool, borrower] = (await Promise.all([
+      ctx.db.get(request.toolId),
+      ctx.db.get(request.requesterId),
+    ])) as [Doc<"tools"> | null, Doc<"users"> | null];
+
+    const declinePayload = JSON.stringify({
+      eventType: "request_status_changed",
+      requestId: request._id,
+      toolId: request.toolId,
+      toolTitle: declinedTool?.title,
+      borrowerEmail: borrower?.email,
+      newStatus: "declined",
+      ownerId: request.ownerId,
+      requesterId: request.requesterId,
+    });
+
     await ctx.db.insert("automationEvents", {
       eventType: "request_status_changed",
       resourceId: request._id,
-      payload: JSON.stringify({
-        requestId: request._id,
-        toolId: request.toolId,
-        newStatus: "declined",
-        ownerId: request.ownerId,
-        requesterId: request.requesterId,
-      }),
+      payload: declinePayload,
       status: "pending",
       idempotencyKey: `req_declined_${request._id}_${now}`,
       attempts: 0,
       createdAt: now,
     });
+
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (webhookUrl && ctx.scheduler) {
+      await ctx.scheduler.runAfter(0, api.automations.dispatchWebhookToN8n, {
+        endpointUrl: webhookUrl,
+        eventType: "request_status_changed",
+        resourceId: request._id,
+        payload: declinePayload,
+      });
+    }
 
     return { success: true };
   },

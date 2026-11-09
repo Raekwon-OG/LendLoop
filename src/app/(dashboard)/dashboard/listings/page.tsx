@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -50,7 +51,7 @@ export default function MyListingsPage() {
     }
 
     try {
-      await removeToolMutation({ toolId });
+      await removeToolMutation({ toolId: toolId as Id<"tools"> });
     } catch (err: unknown) {
       console.error("[MyListingsPage] Delete error:", err);
       alert(err instanceof Error ? err.message : "Failed to remove listing.");
@@ -61,7 +62,7 @@ export default function MyListingsPage() {
     const nextStatus = currentStatus === "available" ? "maintenance" : "available";
     try {
       await updateToolMutation({
-        toolId,
+        toolId: toolId as Id<"tools">,
         status: nextStatus,
       });
     } catch (err: unknown) {

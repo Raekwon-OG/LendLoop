@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -31,7 +32,7 @@ export default function IncomingRequestsPage() {
     setActionMessage(null);
 
     try {
-      await approveMutation({ requestId: requestId as unknown as string });
+      await approveMutation({ requestId: requestId as Id<"borrowRequests"> });
       setActionMessage({
         type: "success",
         text: `Successfully approved loan for "${toolTitle}". The item is now tracked in your Active Loans.`,
@@ -56,7 +57,7 @@ export default function IncomingRequestsPage() {
     setActionMessage(null);
 
     try {
-      await declineMutation({ requestId: requestId as unknown as string });
+      await declineMutation({ requestId: requestId as Id<"borrowRequests"> });
       setActionMessage({
         type: "success",
         text: `Declined borrow request for "${toolTitle}".`,
@@ -81,7 +82,7 @@ export default function IncomingRequestsPage() {
     setActionMessage(null);
 
     try {
-      await returnMutation({ loanId: loanId as unknown as string });
+      await returnMutation({ loanId: loanId as Id<"loans"> });
       setActionMessage({
         type: "success",
         text: `"${toolTitle}" marked as returned! It is now available in the community catalog.`,

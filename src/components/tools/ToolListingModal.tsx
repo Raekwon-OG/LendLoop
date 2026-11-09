@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/Button";
 import { TOOL_CATEGORIES, type ToolCategory, type ToolCondition, type ToolStatus } from "@/types";
 
@@ -72,7 +73,7 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
     try {
       if (isEditing && toolToEdit) {
         await updateToolMutation({
-          toolId: toolToEdit._id,
+          toolId: toolToEdit._id as Id<"tools">,
           title: trimmedTitle,
           description: trimmedDesc,
           category,

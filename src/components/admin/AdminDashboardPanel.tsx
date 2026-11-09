@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -42,7 +43,7 @@ export function AdminDashboardPanel() {
     setFeedback(null);
     try {
       await setTrustedLenderMutation({
-        targetUserId: userId as unknown as string,
+        targetUserId: userId as Id<"users">,
         isTrustedLender: !currentStatus,
       });
       setFeedback({
@@ -74,7 +75,7 @@ export function AdminDashboardPanel() {
     setFeedback(null);
     try {
       await setRoleMutation({
-        targetUserId: userId as unknown as string,
+        targetUserId: userId as Id<"users">,
         newRole,
       });
       setFeedback({
@@ -100,7 +101,7 @@ export function AdminDashboardPanel() {
     setFeedback(null);
     try {
       await removeToolMutation({
-        toolId: toolId as unknown as string,
+        toolId: toolId as Id<"tools">,
         reason: reason.trim() || undefined,
       });
       setFeedback({
@@ -127,7 +128,7 @@ export function AdminDashboardPanel() {
     setFeedback(null);
     try {
       await returnLoanMutation({
-        loanId: loanId as unknown as string,
+        loanId: loanId as Id<"loans">,
       });
       setFeedback({
         type: "success",
