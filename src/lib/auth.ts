@@ -29,7 +29,7 @@ export async function requireAuth(redirectTo: string = "/sign-in") {
 }
 
 /**
- * Extracts the user role from Clerk session claims or public metadata.
+ * Extracts the user role from Clerk session claims, public metadata, or initial admin configuration.
  * Defaults to "user".
  */
 export async function getUserRole(): Promise<UserRole> {
@@ -38,12 +38,40 @@ export async function getUserRole(): Promise<UserRole> {
     return "user";
   }
 
-  // Check role in Clerk public metadata (sessionClaims?.metadata or session.sessionClaims)
-  const role = (session.sessionClaims?.metadata as { role?: string } | undefined)?.role;
+  // 1. Check role in Clerk public metadata sessionClaims
+  const claims = session.sessionClaims as Record<string, unknown> | undefined;
+  const metadataRole = (claims?.metadata as { role?: string } | undefined)?.role;
+  const directRole = claims?.role as string | undefined;
 
-  if (role === "admin") {
+  if (metadataRole === "admin" || directRole === "admin") {
+    return "admin";
+  }
+
+  // 2. Check current user object publicMetadata
+  const user = await currentUser();
+  if (user?.publicMetadata?.role === "admin") {
+    return "admin";
+  }
+
+  // 3. Check INITIAL_ADMIN_EMAIL env fallback
+  const initialAdminEmail = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase();
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase();
+  if (initialAdminEmail && userEmail && initialAdminEmail === userEmail) {
     return "admin";
   }
 
   return "user";
+}
+
+/**
+ * Asserts that the current user has administrator privileges.
+ * Redirects to dashboard if user is not an admin.
+ */
+export async function requireAdminUser(redirectTo: string = "/dashboard") {
+  await requireAuth();
+  const role = await getUserRole();
+  if (role !== "admin") {
+    redirect(redirectTo);
+  }
+  return { role };
 }
