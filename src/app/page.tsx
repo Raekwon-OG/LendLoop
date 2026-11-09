@@ -159,7 +159,17 @@ export default async function Home() {
             <span>Borrow what you need. Lend what you don&apos;t.</span>
           </div>
           <div>
-            <span>Next.js App Router • Clerk • Convex • Tailwind CSS</span>
+            <span>
+              Built by{" "}
+              <a
+                href="https://demio.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-stone-700 underline decoration-stone-300 underline-offset-4 transition-colors hover:text-emerald-800 hover:decoration-emerald-800"
+              >
+                Demi
+              </a>
+            </span>
           </div>
         </div>
       </footer>
