@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { QueryCtx } from "../convex/_generated/server";
+import type { Id } from "../convex/_generated/dataModel";
 import {
   assertToolOwnerOrAdmin,
   canAccessBorrowRequest,
@@ -15,7 +16,8 @@ import {
 describe("Phase 1: Authorization & Access Control Helpers", () => {
   // Mock Data
   const mockUserRecord: UserRecord = {
-    _id: "user_123",
+    _id: "user_123" as unknown as Id<"users">,
+    _creationTime: 1700000000000,
     clerkId: "clerk_user_123",
     name: "Alice Neighbor",
     email: "alice@example.com",
@@ -25,7 +27,8 @@ describe("Phase 1: Authorization & Access Control Helpers", () => {
   };
 
   const mockOtherUserRecord: UserRecord = {
-    _id: "user_456",
+    _id: "user_456" as unknown as Id<"users">,
+    _creationTime: 1700000000000,
     clerkId: "clerk_user_456",
     name: "Bob Builder",
     email: "bob@example.com",
@@ -35,7 +38,8 @@ describe("Phase 1: Authorization & Access Control Helpers", () => {
   };
 
   const mockAdminRecord: UserRecord = {
-    _id: "user_admin_999",
+    _id: "user_admin_999" as unknown as Id<"users">,
+    _creationTime: 1700000000000,
     clerkId: "clerk_admin_999",
     name: "Charlie Admin",
     email: "admin@lendloop.org",
@@ -213,7 +217,7 @@ describe("Phase 1: Authorization & Access Control Helpers", () => {
     it("should deny an unrelated neighbor from viewing request", () => {
       const thirdParty: UserRecord = {
         ...mockUserRecord,
-        _id: "user_789",
+        _id: "user_789" as unknown as Id<"users">,
         clerkId: "clerk_user_789",
       };
       expect(canAccessBorrowRequest(thirdParty, mockRequest)).toBe(false);
@@ -244,7 +248,7 @@ describe("Phase 1: Authorization & Access Control Helpers", () => {
     it("should deny unrelated neighbor from viewing loan", () => {
       const thirdParty: UserRecord = {
         ...mockUserRecord,
-        _id: "user_789",
+        _id: "user_789" as unknown as Id<"users">,
         clerkId: "clerk_user_789",
       };
       expect(canAccessLoan(thirdParty, mockLoan)).toBe(false);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { MutationCtx } from "../convex/_generated/server";
+import type { Id } from "../convex/_generated/dataModel";
 import type { UserRecord } from "../convex/lib/auth";
 
 interface MutationCallable<TArgs, TResult> {
@@ -8,7 +9,8 @@ interface MutationCallable<TArgs, TResult> {
 
 describe("Phase 2: Authentication & User Management Logic", () => {
   const mockAdminUser: UserRecord = {
-    _id: "user_admin_1",
+    _id: "user_admin_1" as unknown as Id<"users">,
+    _creationTime: 1700000000000,
     clerkId: "clerk_admin_1",
     name: "Admin Alice",
     email: "alice@lendloop.org",
@@ -18,7 +20,8 @@ describe("Phase 2: Authentication & User Management Logic", () => {
   };
 
   const mockStandardUser: UserRecord = {
-    _id: "user_std_2",
+    _id: "user_std_2" as unknown as Id<"users">,
+    _creationTime: 1700000000000,
     clerkId: "clerk_std_2",
     name: "Bob Neighbor",
     email: "bob@example.com",
