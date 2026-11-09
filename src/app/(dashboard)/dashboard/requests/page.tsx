@@ -8,6 +8,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
 
 type RequestStatusFilter = "All" | "pending" | "approved" | "declined" | "cancelled";
@@ -48,13 +49,11 @@ export default function MyRequestsPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="flex flex-wrap items-center gap-2.5">
           <h1 className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
             My Borrowing Requests
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
-            Track tools you have reserved, pending approvals, and active loans in your possession.
-          </p>
+          <InfoTooltip text="Track tools you have reserved, pending approvals, and active loans currently in your possession." />
         </div>
         <div>
           <Link href="/dashboard/tools">

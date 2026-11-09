@@ -7,6 +7,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { ToolListingModal } from "@/components/tools/ToolListingModal";
 import type { ToolCondition, ToolStatus } from "@/types";
 
@@ -86,21 +87,17 @@ export default function MyListingsPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl border border-stone-200 p-6 sm:p-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-stone-900">
-              My Equipment Listings
-            </h1>
-            {!isLoading && (
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700">
-                {myTools.length} {myTools.length === 1 ? "tool" : "tools"}
-              </span>
-            )}
-          </div>
-          <p className="mt-1 text-sm text-stone-600">
-            Manage the tools and hardware you are sharing with your neighborhood.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl border border-stone-200 p-6">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+            My Equipment Listings
+          </h1>
+          <InfoTooltip text="Manage the tools and hardware you are sharing with your neighborhood. Create listings, edit details, or toggle maintenance mode." />
+          {!isLoading && (
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700">
+              {myTools.length} {myTools.length === 1 ? "tool" : "tools"}
+            </span>
+          )}
         </div>
         <div>
           <Button size="sm" onClick={handleOpenCreate}>

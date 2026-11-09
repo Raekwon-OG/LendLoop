@@ -4,9 +4,10 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
 
 type AdminTab = "members" | "listings" | "loans";
@@ -241,10 +242,10 @@ export function AdminDashboardPanel() {
       {activeTab === "members" && (
         <Card>
           <CardHeader>
-            <CardTitle>Community Members Management</CardTitle>
-            <CardDescription>
-              Grant or revoke Trusted Lender status and manage administrative privileges.
-            </CardDescription>
+            <div className="flex items-center gap-2">
+              <CardTitle>Community Members Management</CardTitle>
+              <InfoTooltip text="Grant or revoke Trusted Lender status and manage administrative privileges." />
+            </div>
           </CardHeader>
           <CardContent>
             {users === undefined ? (
@@ -318,10 +319,10 @@ export function AdminDashboardPanel() {
       {activeTab === "listings" && (
         <Card>
           <CardHeader>
-            <CardTitle>Community Listings Moderation</CardTitle>
-            <CardDescription>
-              Review all community equipment. Administrators can remove inappropriate or abandoned listings.
-            </CardDescription>
+            <div className="flex items-center gap-2">
+              <CardTitle>Community Listings Moderation</CardTitle>
+              <InfoTooltip text="Review all community equipment. Administrators can remove inappropriate or abandoned listings." />
+            </div>
           </CardHeader>
           <CardContent>
             {tools === undefined ? (
@@ -399,11 +400,9 @@ export function AdminDashboardPanel() {
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
+              <div className="flex items-center gap-2">
                 <CardTitle>Global Loans Oversight</CardTitle>
-                <CardDescription>
-                  Monitor all active, overdue, and returned borrowing transactions.
-                </CardDescription>
+                <InfoTooltip text="Monitor all active, overdue, and returned borrowing transactions across the community." />
               </div>
 
               {/* Status Filter Pills */}

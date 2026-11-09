@@ -8,6 +8,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
 
 type IncomingStatusFilter = "pending" | "All" | "approved" | "declined";
@@ -108,18 +109,14 @@ export default function IncomingRequestsPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
-            Incoming Loan Requests
-          </h1>
-          {pendingCount > 0 && (
-            <Badge variant="accent">{pendingCount} Pending</Badge>
-          )}
-        </div>
-        <p className="mt-1 text-sm text-stone-600">
-          Review reservation requests from neighbors and manage equipment currently on loan.
-        </p>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+          Incoming Loan Requests
+        </h1>
+        <InfoTooltip text="Review reservation requests from neighbors, approve or decline dates, and mark loaned equipment as returned." />
+        {pendingCount > 0 && (
+          <Badge variant="accent">{pendingCount} Pending</Badge>
+        )}
       </div>
 
       {/* Action Notification Alert */}

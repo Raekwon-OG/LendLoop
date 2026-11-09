@@ -3,6 +3,7 @@ import { getCurrentUser, getUserRole } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -13,20 +14,16 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Hero */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6 sm:p-8">
+      <div className="rounded-xl border border-stone-200 bg-white p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
-                Welcome back, {greetingName}!
-              </h1>
-              <Badge variant={role === "admin" ? "accent" : "neutral"}>
-                {role === "admin" ? "Administrator" : "Community Member"}
-              </Badge>
-            </div>
-            <p className="mt-1 text-sm text-stone-600">
-              Manage your listed tools, incoming requests, and borrowed items.
-            </p>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+              Welcome back, {greetingName}
+            </h1>
+            <Badge variant={role === "admin" ? "accent" : "neutral"}>
+              {role === "admin" ? "Administrator" : "Community Member"}
+            </Badge>
+            <InfoTooltip text="Manage your listed tools, incoming reservation requests, and borrowed items from one place." />
           </div>
           <div className="flex items-center gap-2">
             <Link href="/dashboard/tools">
@@ -45,21 +42,21 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
                 Your Shared Tools
               </span>
               <span className="text-lg">🛠️</span>
             </div>
-            <CardTitle>My Tool Listings</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>My Tool Listings</CardTitle>
+              <InfoTooltip text="Create listings, toggle maintenance availability, and manage your equipment inventory." />
+            </div>
             <CardDescription>
-              Tools you are currently sharing with your neighborhood lending loop.
+              Tools you are sharing with your neighborhood.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-stone-500 mb-4">
-              Create listings, toggle maintenance availability, and manage your equipment inventory.
-            </p>
             <Link href="/dashboard/listings">
               <Button variant="outline" size="sm" className="w-full">
                 Manage My Listings &rarr;
@@ -70,21 +67,21 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
                 Lending Queue
               </span>
               <span className="text-lg">📬</span>
             </div>
-            <CardTitle>Incoming Loan Requests</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Incoming Loan Requests</CardTitle>
+              <InfoTooltip text="Review reservation dates, approve or decline requests, and mark returned equipment." />
+            </div>
             <CardDescription>
-              Neighbors asking to borrow one of your listed community tools.
+              Neighbors asking to borrow your listed tools.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-stone-500 mb-4">
-              Review reservation dates, approve or decline requests, and mark returned equipment.
-            </p>
             <Link href="/dashboard/incoming">
               <Button variant="outline" size="sm" className="w-full">
                 Review Incoming Requests &rarr;
@@ -95,21 +92,21 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
                 Your Reservations
               </span>
               <span className="text-lg">📋</span>
             </div>
-            <CardTitle>My Borrowing Requests</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>My Borrowing Requests</CardTitle>
+              <InfoTooltip text="Track reservation approval status, due dates, and items currently in your possession." />
+            </div>
             <CardDescription>
-              Pending, approved, and active tools you have requested to borrow.
+              Tools you have requested or borrowed.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-stone-500 mb-4">
-              Track reservation approval status, due dates, and items currently in your possession.
-            </p>
             <Link href="/dashboard/requests">
               <Button variant="outline" size="sm" className="w-full">
                 View My Requests &rarr;
@@ -120,21 +117,21 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-xs font-semibold tracking-wider text-stone-500 uppercase">
                 Neighborhood Catalog
               </span>
               <span className="text-lg">🔍</span>
             </div>
-            <CardTitle>Browse Community Tools</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Browse Community Tools</CardTitle>
+              <InfoTooltip text="Filter by category, check equipment conditions, and request items for upcoming projects." />
+            </div>
             <CardDescription>
-              Search and reserve equipment available across your local community.
+              Reserve equipment available in your community.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-stone-500 mb-4">
-              Filter by category, check equipment conditions, and request items for upcoming projects.
-            </p>
             <Link href="/dashboard/tools">
               <Button variant="outline" size="sm" className="w-full">
                 Browse Community Tools &rarr;
@@ -149,25 +146,23 @@ export default async function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-amber-900">Admin Control Panel</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-amber-900">Admin Control Panel</CardTitle>
+                  <InfoTooltip text="Full administrative oversight to view all active community loans, designate trusted lenders, and moderate listings." />
+                </div>
                 <CardDescription className="text-amber-700">
-                  Platform moderation, global loan audits, and trusted lender designation.
+                  Moderation, loan audits, and trusted lender badges.
                 </CardDescription>
               </div>
               <Badge variant="accent">Admin Only</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-amber-800 mb-3">
-              Full administrative oversight to view all active community loans, designate trusted lenders, and moderate listings.
-            </p>
-            <div>
-              <Link href="/dashboard/admin">
-                <Button variant="outline" size="sm" className="bg-white">
-                  Open Admin Panel &rarr;
-                </Button>
-              </Link>
-            </div>
+            <Link href="/dashboard/admin">
+              <Button variant="outline" size="sm" className="bg-white">
+                Open Admin Panel &rarr;
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}

@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { BorrowRequestModal } from "@/components/requests/BorrowRequestModal";
 import { TOOL_CATEGORIES } from "@/types";
 
@@ -53,13 +54,11 @@ export default function BrowseToolsDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
+      <div className="flex flex-wrap items-center gap-2.5">
         <h1 className="text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
           Browse Community Tools
         </h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Borrow equipment shared by trusted neighbors in your community lending loop.
-        </p>
+        <InfoTooltip text="Search and reserve equipment shared by trusted neighbors in your community lending loop." />
       </div>
 
       {successBanner && (
