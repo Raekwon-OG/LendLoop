@@ -50,6 +50,49 @@ export declare const api: {
       Record<string, never>,
       Array<{ name: string; count: number }>
     >;
+    getMyTools: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        ownerId: string;
+        ownerClerkId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: "Like New" | "Good" | "Fair";
+        status: "available" | "borrowed" | "maintenance" | "archived";
+        createdAt: number;
+        updatedAt: number;
+      }>
+    >;
+    getToolById: FunctionReference<"query", "public", { toolId: string }, unknown>;
+    create: FunctionReference<
+      "mutation",
+      "public",
+      {
+        title: string;
+        description: string;
+        category: string;
+        condition: "Like New" | "Good" | "Fair";
+      },
+      string
+    >;
+    update: FunctionReference<
+      "mutation",
+      "public",
+      {
+        toolId: string;
+        title?: string;
+        description?: string;
+        category?: string;
+        condition?: "Like New" | "Good" | "Fair";
+        status?: "available" | "borrowed" | "maintenance" | "archived";
+      },
+      unknown
+    >;
+    remove: FunctionReference<"mutation", "public", { toolId: string }, { success: boolean; deletedToolId: string }>;
   };
   [key: string]: unknown;
 };

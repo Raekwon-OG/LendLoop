@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "@convex/_generated/api";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { TOOL_CATEGORIES } from "@/types";

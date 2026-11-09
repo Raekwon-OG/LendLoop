@@ -1,4 +1,5 @@
 import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
 
 export interface AuthenticatedUserIdentity {
   tokenIdentifier: string;
@@ -10,51 +11,10 @@ export interface AuthenticatedUserIdentity {
   pictureUrl?: string;
 }
 
-export interface UserRecord {
-  _id: string;
-  clerkId: string;
-  name: string;
-  email: string;
-  role: "user" | "admin";
-  isTrustedLender: boolean;
-  createdAt: number;
-}
-
-export interface ToolRecord {
-  _id: string;
-  ownerId: string;
-  ownerClerkId: string;
-  title: string;
-  category: string;
-  condition: "Like New" | "Good" | "Fair";
-  status: "available" | "borrowed" | "maintenance" | "archived";
-}
-
-export interface BorrowRequestRecord {
-  _id: string;
-  toolId: string;
-  requesterId: string;
-  requesterClerkId: string;
-  ownerId: string;
-  ownerClerkId: string;
-  startDate: number;
-  endDate: number;
-  status: "pending" | "approved" | "declined" | "cancelled";
-}
-
-export interface LoanRecord {
-  _id: string;
-  toolId: string;
-  borrowRequestId: string;
-  lenderId: string;
-  lenderClerkId: string;
-  borrowerId: string;
-  borrowerClerkId: string;
-  startDate: number;
-  dueDate: number;
-  returnedDate?: number;
-  status: "active" | "returned" | "overdue";
-}
+export type UserRecord = Doc<"users">;
+export type ToolRecord = Doc<"tools">;
+export type BorrowRequestRecord = Doc<"borrowRequests">;
+export type LoanRecord = Doc<"loans">;
 
 /**
  * Extracts verified Clerk user identity from the Convex context.
@@ -161,9 +121,9 @@ export async function requireAdmin(
  */
 export function assertToolOwnerOrAdmin(
   user: UserRecord,
-  tool: { ownerId: string; ownerClerkId: string }
+  tool: { ownerId: Id<"users"> | string; ownerClerkId: string }
 ): void {
-  const isOwner = user._id === tool.ownerId || user.clerkId === tool.ownerClerkId;
+  const isOwner = (user._id as string) === (tool.ownerId as string) || user.clerkId === tool.ownerClerkId;
   const isAdmin = user.role === "admin";
 
   if (!isOwner && !isAdmin) {
@@ -180,8 +140,8 @@ export function canAccessBorrowRequest(
   request: { requesterId: string; requesterClerkId: string; ownerId: string; ownerClerkId: string }
 ): boolean {
   if (user.role === "admin") return true;
-  if (user._id === request.requesterId || user.clerkId === request.requesterClerkId) return true;
-  if (user._id === request.ownerId || user.clerkId === request.ownerClerkId) return true;
+  if ((user._id as string) === request.requesterId || user.clerkId === request.requesterClerkId) return true;
+  if ((user._id as string) === request.ownerId || user.clerkId === request.ownerClerkId) return true;
   return false;
 }
 
@@ -194,8 +154,8 @@ export function canAccessLoan(
   loan: { lenderId: string; lenderClerkId: string; borrowerId: string; borrowerClerkId: string }
 ): boolean {
   if (user.role === "admin") return true;
-  if (user._id === loan.lenderId || user.clerkId === loan.lenderClerkId) return true;
-  if (user._id === loan.borrowerId || user.clerkId === loan.borrowerClerkId) return true;
+  if ((user._id as string) === loan.lenderId || user.clerkId === loan.lenderClerkId) return true;
+  if ((user._id as string) === loan.borrowerId || user.clerkId === loan.borrowerClerkId) return true;
   return false;
 }
 
