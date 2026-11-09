@@ -1,0 +1,154 @@
+{
+  "name": "LendLoop - Borrow Request Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "borrow-request",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "id": "1d8a4a50-b492-41f2-b88a-21147a409f01",
+      "webhookId": "lendloop-borrow-request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// Retrieve shared secret from environment\nconst secret = $env.N8N_WEBHOOK_SECRET || 'lendloop_n8n_hmac_secret_dev';\nconst headers = $input.first().json.headers || {};\nconst signatureHeader = headers['x-lendloop-signature'] || headers['X-LendLoop-Signature'];\nconst timestampHeader = headers['x-lendloop-timestamp'] || headers['X-LendLoop-Timestamp'];\nlet rawBody = $input.first().json.body;\n\nif (typeof rawBody === 'object') {\n  rawBody = JSON.stringify(rawBody);\n}\n\nif (!signatureHeader) {\n  throw new Error('HMAC signature missing in X-LendLoop-Signature header.');\n}\n\n// Prevent replay attacks: ensure timestamp is within 15 minutes\nif (timestampHeader) {\n  const sentTime = parseInt(timestampHeader, 10);\n  const now = Date.now();\n  if (isNaN(sentTime) || Math.abs(now - sentTime) > 15 * 60 * 1000) {\n    throw new Error('HMAC signature rejected: timestamp expired or clock drift exceeds 15 minutes.');\n  }\n}\n\n// Compute expected HMAC SHA-256 signature\nconst payloadToVerify = timestampHeader ? `${timestampHeader}.${rawBody}` : rawBody;\nconst expectedSignature = crypto.createHmac('sha256', secret).update(payloadToVerify).digest('hex');\n\nconst sigBuffer = Buffer.from(signatureHeader, 'hex');\nconst expectedBuffer = Buffer.from(expectedSignature, 'hex');\n\nif (sigBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {\n  throw new Error('HMAC signature verification failed: payload may have been tampered with.');\n}\n\nconst parsed = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;\nreturn [{ json: parsed }];"
+      },
+      "name": "Verify HMAC & Replay Guard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300],
+      "id": "2e7b5b61-c503-42a3-a99b-32258b510a02"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.eventType }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "request_created",
+              "outputKey": "request_created"
+            },
+            {
+              "value2": "request_status_changed",
+              "outputKey": "request_status_changed"
+            }
+          ]
+        }
+      },
+      "name": "Route by Event Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [660, 300],
+      "id": "3f8c6c72-d614-43b4-b00c-43369c621b03"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json;\n\n// Format minimized notification for the tool owner\nconst startDateStr = new Date(payload.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });\nconst endDateStr = new Date(payload.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });\n\nreturn [{\n  json: {\n    channel: 'notification',\n    recipientRole: 'lender',\n    recipientEmail: payload.ownerEmail || 'owner@neighborhood.local',\n    subject: `LendLoop: New borrow request for \"${payload.toolTitle}\"`,\n    body: `Hi there! Your neighbor ${payload.requesterName} has requested to borrow your \"${payload.toolTitle}\" from ${startDateStr} to ${endDateStr}.${payload.note ? ` Note from neighbor: \"${payload.note}\"` : ''}`,\n    actionUrl: `${$env.CONVEX_SITE_URL || 'http://localhost:3000'}/dashboard/incoming`,\n    requestId: payload.requestId,\n    toolId: payload.toolId,\n    dispatchedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Format Owner Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 200],
+      "id": "4a9d7d83-e725-44c5-c11d-54470d732c04"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first().json;\n\nconst statusLabel = payload.newStatus ? payload.newStatus.toUpperCase() : 'UPDATED';\n\nreturn [{\n  json: {\n    channel: 'notification',\n    recipientRole: 'borrower',\n    recipientEmail: payload.borrowerEmail || 'borrower@neighborhood.local',\n    subject: `LendLoop: Your request for \"${payload.toolTitle || 'Tool'}\" is ${statusLabel}`,\n    body: `Hello! Your request to borrow \"${payload.toolTitle || 'the tool'}\" has been marked as ${statusLabel} by the owner.`,\n    actionUrl: `${$env.CONVEX_SITE_URL || 'http://localhost:3000'}/dashboard/requests`,\n    requestId: payload.requestId,\n    status: payload.newStatus,\n    dispatchedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Format Requester Status Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400],
+      "id": "5b0e8e94-f836-45d6-d22e-65581e843d05"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Mock notification logger (can be connected to SMTP/Slack/Discord)\nconsole.log(`[LendLoop Automation Notification Dispatch] TO: ${item.recipientEmail} | SUBJECT: ${item.subject}`);\nconsole.log(`CONTENT: ${item.body}`);\nconsole.log(`ACTION URL: ${item.actionUrl}`);\n\nreturn [{\n  json: {\n    success: true,\n    deliveredTo: item.recipientEmail,\n    subject: item.subject,\n    notificationChannel: 'simulated_email_log',\n    status: 'delivered',\n    timestamp: Date.now()\n  }\n}];"
+      },
+      "name": "Dispatch Notification (Mock Log / Email)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 300],
+      "id": "6c1f9f05-0947-46e7-e33f-76692f954e06"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify HMAC & Replay Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify HMAC & Replay Guard": {
+      "main": [
+        [
+          {
+            "node": "Route by Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event Type": {
+      "main": [
+        [
+          {
+            "node": "Format Owner Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Requester Status Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Owner Notification": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Notification (Mock Log / Email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Requester Status Notification": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Notification (Mock Log / Email)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "errorWorkflow": "lendloop-error-handler"
+  },
+  "active": true
+}

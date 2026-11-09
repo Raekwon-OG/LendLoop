@@ -1,0 +1,26 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: lendloop-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=UTC
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_FUNCTION_ALLOW_BUILTIN=crypto,buffer,util
+      # Security: Shared HMAC secret for webhook signature verification
+      - N8N_WEBHOOK_SECRET=${N8N_WEBHOOK_SECRET:-lendloop_n8n_hmac_secret_dev}
+      - CONVEX_SITE_URL=${CONVEX_SITE_URL:-http://localhost:3000}
+      - N8N_WRITEBACK_API_KEY=${N8N_WRITEBACK_API_KEY:-lendloop_writeback_key_dev}
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+    name: lendloop_n8n_data

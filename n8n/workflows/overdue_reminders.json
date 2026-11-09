@@ -1,0 +1,185 @@
+{
+  "name": "LendLoop - Daily Overdue Reminders & Idempotent Writeback",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Daily Schedule (09:00 UTC)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "id": "1a1a1a1a-1111-4111-a111-111111111111"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CONVEX_SITE_URL || 'http://localhost:3000' }}/api/overdue-loans",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.N8N_WEBHOOK_SECRET || 'lendloop_n8n_hmac_secret_dev' }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "retryOnFail": true,
+          "maxTries": 3,
+          "waitBetweenTries": 1000
+        }
+      },
+      "name": "Fetch Overdue Loans (Convex HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [440, 300],
+      "id": "2b2b2b2b-2222-4222-b222-222222222222"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nlet loans = Array.isArray(response) ? response : (response.loans || []);\n\nif (loans.length === 0) {\n  console.log('[LendLoop] No overdue loans found for today.');\n  return [];\n}\n\nconst todayStr = new Date().toISOString().slice(0, 10);\n\nreturn loans.map((loan) => {\n  const dueDateStr = new Date(loan.dueDate).toLocaleDateString('en-US', {\n    month: 'short',\n    day: 'numeric',\n    year: 'numeric'\n  });\n\n  return {\n    json: {\n      loanId: loan.loanId,\n      toolTitle: loan.toolTitle,\n      toolCategory: loan.toolCategory,\n      borrowerName: loan.borrowerName,\n      borrowerEmail: loan.borrowerEmail,\n      dueDateStr,\n      daysOverdue: loan.daysOverdue,\n      reminderCount: loan.reminderCount || 0,\n      // Idempotency key scoped to loan ID and calendar day to guarantee exactly-once reminder per day\n      idempotencyKey: `reminder_${loan.loanId}_${todayStr}`,\n      reminderMessage: `Hi ${loan.borrowerName}! Friendly neighborhood reminder from LendLoop: \"${loan.toolTitle}\" was due back on ${dueDateStr} (${loan.daysOverdue} days overdue). Please arrange return with the lender or request an extension.`\n    }\n  };\n});"
+      },
+      "name": "Format Reminders & Idempotency Keys",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 300],
+      "id": "3c3c3c3c-3333-4333-c333-333333333333"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// Mock notification dispatcher (can be swapped with SendGrid, SES, Resend, or Discord/Slack)\nconsole.log(`[LendLoop Overdue Notification Dispatch] TO: ${item.borrowerEmail} (${item.borrowerName})`);\nconsole.log(`SUBJECT: LendLoop Reminder: Overdue return of \"${item.toolTitle}\"`);\nconsole.log(`BODY: ${item.reminderMessage}`);\n\nreturn [{\n  json: {\n    ...item,\n    dispatchedAt: Date.now(),\n    deliveryStatus: 'delivered'\n  }\n}];"
+      },
+      "name": "Dispatch Borrower Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 300],
+      "id": "4d4d4d4d-4444-4444-d444-444444444444"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst item = $input.first().json;\nconst secret = $env.N8N_WEBHOOK_SECRET || 'lendloop_n8n_hmac_secret_dev';\n\nconst timestamp = Date.now().toString();\nconst payload = {\n  loanId: item.loanId,\n  idempotencyKey: item.idempotencyKey,\n  deliveredVia: 'email'\n};\n\nconst rawBody = JSON.stringify(payload);\nconst payloadToSign = `${timestamp}.${rawBody}`;\nconst signature = crypto.createHmac('sha256', secret).update(payloadToSign).digest('hex');\n\nreturn [{\n  json: {\n    loanId: item.loanId,\n    idempotencyKey: item.idempotencyKey,\n    deliveredVia: 'email',\n    signature,\n    timestamp,\n    rawBody\n  }\n}];"
+      },
+      "name": "Cryptographic HMAC Signer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 300],
+      "id": "5e5e5e5e-5555-4555-e555-555555555555"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CONVEX_SITE_URL || 'http://localhost:3000' }}/api/reminder-writeback",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.N8N_WEBHOOK_SECRET || 'lendloop_n8n_hmac_secret_dev' }}"
+            },
+            {
+              "name": "X-LendLoop-Signature",
+              "value": "={{ $json.signature }}"
+            },
+            {
+              "name": "X-LendLoop-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.rawBody }}",
+        "options": {
+          "retryOnFail": true,
+          "maxTries": 3,
+          "waitBetweenTries": 1500
+        }
+      },
+      "name": "Idempotent Write-Back to Convex",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1320, 300],
+      "id": "6f6f6f6f-6666-4666-f666-666666666666"
+    }
+  ],
+  "connections": {
+    "Daily Schedule (09:00 UTC)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Overdue Loans (Convex HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Overdue Loans (Convex HTTP)": {
+      "main": [
+        [
+          {
+            "node": "Format Reminders & Idempotency Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reminders & Idempotency Keys": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Borrower Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dispatch Borrower Reminder": {
+      "main": [
+        [
+          {
+            "node": "Cryptographic HMAC Signer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cryptographic HMAC Signer": {
+      "main": [
+        [
+          {
+            "node": "Idempotent Write-Back to Convex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "errorWorkflow": "lendloop-error-handler"
+  },
+  "active": true
+}

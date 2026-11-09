@@ -1,0 +1,61 @@
+{
+  "name": "LendLoop - Automation Error Handler & Incident Logger",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "e1e1e1e1-e1e1-4e1e-e1e1-e1e1e1e1e1e1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const errorData = $input.first().json;\n\nconst incident = {\n  severity: 'CRITICAL',\n  workflowId: errorData.workflow?.id || 'unknown',\n  workflowName: errorData.workflow?.name || 'LendLoop Workflow',\n  executionId: errorData.execution?.id || 'unknown',\n  failedNode: errorData.execution?.lastNodeExecuted || 'unknown',\n  errorMessage: errorData.execution?.error?.message || errorData.message || 'Unknown automation execution failure',\n  timestamp: new Date().toISOString(),\n  environment: $env.NODE_ENV || 'production'\n};\n\nconsole.error(`[LendLoop Automation Incident] FAILED WORKFLOW: \"${incident.workflowName}\" | NODE: \"${incident.failedNode}\"`);\nconsole.error(`ERROR DETAILS: ${incident.errorMessage}`);\nconsole.error(`EXECUTION ID: ${incident.executionId}`);\n\nreturn [{\n  json: incident\n}];"
+      },
+      "name": "Format Incident Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300],
+      "id": "e2e2e2e2-e2e2-4e2e-e2e2-e2e2e2e2e2e2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const incident = $input.first().json;\n\n// Emits simulated operational alert (can be configured to PagerDuty/Discord/Slack/Email)\nconsole.log(`[ALERT DISPATCHED] Operational incident recorded for workflow \"${incident.workflowName}\". Preventing silent failures.`);\n\nreturn [{\n  json: {\n    incidentRecorded: true,\n    workflow: incident.workflowName,\n    loggedAt: incident.timestamp\n  }\n}];"
+      },
+      "name": "Dispatch Incident Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300],
+      "id": "e3e3e3e3-e3e3-4e3e-e3e3-e3e3e3e3e3e3"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Incident Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Incident Details": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Incident Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true
+}
