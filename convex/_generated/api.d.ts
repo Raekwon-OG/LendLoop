@@ -243,6 +243,8 @@ export declare const api: {
         lenderName: string;
         lenderEmail: string;
         isCallerLender: boolean;
+        lastReminderSentAt?: number;
+        reminderCount?: number;
       }>
     >;
     getMyLoanHistory: FunctionReference<
@@ -295,6 +297,75 @@ export declare const api: {
         borrowerEmail: string;
         lenderName: string;
         lenderEmail: string;
+        lastReminderSentAt?: number;
+        reminderCount?: number;
+      }>
+    >;
+  };
+  automations: {
+    getOverdueLoansForAutomation: FunctionReference<
+      "query",
+      "public",
+      { apiKey?: string },
+      Array<{
+        loanId: string;
+        toolTitle: string;
+        toolCategory: string;
+        borrowerName: string;
+        borrowerEmail: string;
+        dueDate: number;
+        daysOverdue: number;
+        lastReminderSentAt?: number;
+        reminderCount: number;
+      }>
+    >;
+    recordReminderWriteback: FunctionReference<
+      "mutation",
+      "public",
+      {
+        loanId: string;
+        idempotencyKey: string;
+        deliveredVia?: string;
+        signature?: string;
+      },
+      {
+        success: boolean;
+        alreadyProcessed: boolean;
+        message: string;
+        eventId: string;
+        reminderCount?: number;
+      }
+    >;
+    dispatchWebhookToN8n: FunctionReference<
+      "action",
+      "public",
+      {
+        endpointUrl: string;
+        eventType: string;
+        resourceId: string;
+        payload: string;
+      },
+      {
+        success: boolean;
+        status?: number;
+        attempts: number;
+        error?: string;
+      }
+    >;
+    getResourceAutomationHistory: FunctionReference<
+      "query",
+      "public",
+      { resourceId: string },
+      Array<{
+        _id: string;
+        eventType: string;
+        resourceId: string;
+        payload: string;
+        status: string;
+        idempotencyKey?: string;
+        attempts: number;
+        lastAttemptAt?: number;
+        createdAt: number;
       }>
     >;
   };

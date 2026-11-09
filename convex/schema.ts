@@ -84,6 +84,8 @@ export default defineSchema({
     dueDate: v.number(),
     returnedDate: v.optional(v.number()),
     status: v.union(v.literal("active"), v.literal("returned"), v.literal("overdue")),
+    lastReminderSentAt: v.optional(v.number()),
+    reminderCount: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_tool", ["toolId"])
