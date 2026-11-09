@@ -158,7 +158,7 @@ export default async function Home() {
             <span>—</span>
             <span>Borrow what you need. Lend what you don&apos;t.</span>
           </div>
-          <div>
+          <div className="flex flex-col items-center gap-1.5 sm:items-end">
             <span>
               Built by{" "}
               <a
@@ -168,7 +168,19 @@ export default async function Home() {
                 className="font-medium text-stone-700 underline decoration-stone-300 underline-offset-4 transition-colors hover:text-emerald-800 hover:decoration-emerald-800"
               >
                 Demi
+              </a>{" "}
+              for{" "}
+              <a
+                href="https://www.fluencetraining.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-stone-700 underline decoration-stone-300 underline-offset-4 transition-colors hover:text-emerald-800 hover:decoration-emerald-800"
+              >
+                Fluence
               </a>
+            </span>
+            <span className="text-[11px] text-stone-400">
+              Next.js App Router • Clerk • Convex • n8n • Tailwind CSS
             </span>
           </div>
         </div>
