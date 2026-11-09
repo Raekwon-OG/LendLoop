@@ -5,12 +5,25 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useAuth } from "@clerk/nextjs";
 
-const convexUrl =
-  process.env.NEXT_PUBLIC_CONVEX_URL && process.env.NEXT_PUBLIC_CONVEX_URL.startsWith("http")
-    ? process.env.NEXT_PUBLIC_CONVEX_URL
-    : "https://placeholder-lendloop.convex.cloud";
+function resolveConvexUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
 
-const convex = new ConvexReactClient(convexUrl);
+  // If a valid HTTP URL is provided and does not use an unparseable placeholder
+  if (
+    envUrl &&
+    envUrl.startsWith("http") &&
+    !envUrl.includes("example-placeholder") &&
+    !envUrl.includes("placeholder-lendloop")
+  ) {
+    return envUrl;
+  }
+
+  // Fallback to a valid Convex Cloud deployment format (<adjective>-<noun>-<digits>)
+  // to prevent internal parser fatal errors when environment keys are unpopulated
+  return "https://fictional-lendloop-123.convex.cloud";
+}
+
+const convex = new ConvexReactClient(resolveConvexUrl());
 
 interface ConvexClientProviderProps {
   children: ReactNode;

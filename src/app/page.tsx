@@ -17,12 +17,6 @@ export default async function Home() {
       <main className="flex-1">
         <section className="relative overflow-hidden bg-radial from-stone-100 to-stone-50 py-20 sm:py-28 lg:py-32">
           <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-            {/* Tag / Pill */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-100/80 px-3 py-1 text-xs font-medium text-emerald-800">
-              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-600" />
-              Neighborhood Tool-Lending Cooperative
-            </div>
-
             {/* Tagline Heading */}
             <h1 className="mx-auto max-w-3xl text-4xl leading-[1.1] font-extrabold tracking-tight text-stone-900 sm:text-6xl">
               Borrow what you need. <br className="hidden sm:inline" />
@@ -79,7 +73,7 @@ export default async function Home() {
                 <div>
                   <h2 className="text-sm font-semibold text-stone-900">Verified Neighbors</h2>
                   <p className="mt-0.5 text-xs text-stone-600">
-                    Clerk-authenticated community members and trusted lender badges.
+                    Securely verified community members and trusted lender badges.
                   </p>
                 </div>
               </div>
