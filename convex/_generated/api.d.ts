@@ -28,6 +28,29 @@ export declare const api: {
     >;
     listUsers: FunctionReference<"query", "public", Record<string, never>, unknown>;
   };
+  tools: {
+    getAvailable: FunctionReference<
+      "query",
+      "public",
+      { category?: string },
+      Array<{
+        _id: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: "Like New" | "Good" | "Fair";
+        status: string;
+        isAvailable: boolean;
+        createdAt: number;
+      }>
+    >;
+    getAvailableCategories: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{ name: string; count: number }>
+    >;
+  };
   [key: string]: unknown;
 };
 
