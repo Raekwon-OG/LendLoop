@@ -3,6 +3,7 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { DashboardNav } from "@/components/layout/DashboardNav";
 import { getUserRole } from "@/lib/auth";
+import { Logo } from "@/components/ui/Logo";
 
 export default async function DashboardLayout({
   children,
@@ -18,9 +19,7 @@ export default async function DashboardLayout({
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-800 text-sm font-black text-white">
-                L
-              </span>
+              <Logo size={32} />
               <span className="text-lg font-bold text-stone-900">LendLoop</span>
             </Link>
             <span className="hidden rounded border border-stone-300 px-2 py-0.5 text-xs text-stone-600 sm:inline-block">

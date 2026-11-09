@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { PublicToolsDirectory } from "@/components/tools/PublicToolsDirectory";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export default async function Home() {
   const { userId } = await auth();
@@ -158,9 +159,7 @@ export default async function Home() {
       <footer className="border-t border-stone-200 bg-white py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-xs text-stone-500 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-800 text-xs font-bold text-white">
-              L
-            </span>
+            <Logo size={24} />
             <span className="font-semibold text-stone-800">LendLoop</span>
             <span>—</span>
             <span>Borrow what you need. Lend what you don&apos;t.</span>

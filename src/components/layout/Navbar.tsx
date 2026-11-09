@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export function Navbar() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -12,9 +13,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-800 text-base font-black text-white shadow-xs">
-            L
-          </span>
+          <Logo size={36} />
           <div className="flex flex-col">
             <span className="text-lg leading-tight font-bold text-stone-900">LendLoop</span>
             <span className="hidden text-[10px] leading-none text-stone-500 sm:inline">

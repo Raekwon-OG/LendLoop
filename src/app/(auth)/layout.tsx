@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/ui/Logo";
 
 export default function AuthLayout({
   children,
@@ -9,10 +10,8 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-stone-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
-        <Link href="/" className="inline-flex items-center gap-2 text-2xl font-bold text-stone-900">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-800 text-lg font-black text-white">
-            L
-          </span>
+        <Link href="/" className="inline-flex items-center gap-2.5 text-2xl font-bold text-stone-900">
+          <Logo size={36} />
           LendLoop
         </Link>
         <p className="mt-2 text-sm text-stone-600">

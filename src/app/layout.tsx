@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "LendLoop — Borrow what you need. Lend what you don't.",
   description:
     "Neighborhood tool-lending application. Borrow tools from neighbors, lend tools you rarely use.",
+  icons: {
+    icon: "/lendloop-logo.png",
+    apple: "/lendloop-logo.png",
+  },
 };
 
 export default function RootLayout({
