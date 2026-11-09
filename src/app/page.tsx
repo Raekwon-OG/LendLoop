@@ -1,69 +1,175 @@
-import Image from "next/image";
+import Link from "next/link";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { Navbar } from "@/components/layout/Navbar";
+import { PublicToolsDirectory } from "@/components/tools/PublicToolsDirectory";
+import { Button } from "@/components/ui/Button";
 
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-1 flex-col items-center justify-between bg-white px-16 py-32 sm:items-start dark:bg-black">
-        <Image
-          className="h-5 w-[100px] dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl leading-10 font-semibold tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 transition-colors hover:bg-[#383838] md:w-[158px] dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="h-[14px] w-4 dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="flex min-h-screen flex-col bg-stone-50 text-stone-900">
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Hero Section */}
+      <main className="flex-1">
+        <section className="relative overflow-hidden bg-radial from-stone-100 to-stone-50 py-20 sm:py-28 lg:py-32">
+          <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+            {/* Tag / Pill */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-100/80 px-3 py-1 text-xs font-medium text-emerald-800">
+              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-600" />
+              Neighborhood Tool-Lending Cooperative
+            </div>
+
+            {/* Tagline Heading */}
+            <h1 className="mx-auto max-w-3xl text-4xl leading-[1.1] font-extrabold tracking-tight text-stone-900 sm:text-6xl">
+              Borrow what you need. <br className="hidden sm:inline" />
+              <span className="text-emerald-800">Lend what you don&apos;t.</span>
+            </h1>
+
+            {/* Short Product Explanation */}
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-600 sm:text-xl">
+              LendLoop connects neighbors to share tools, equipment, and DIY gear. Keep useful tools
+              out of storage, avoid single-use purchases, and build a stronger local community.
+            </p>
+
+            {/* Hero CTAs */}
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button size="lg" className="w-full shadow-md sm:w-auto">
+                    Sign in to Lend or Borrow
+                  </Button>
+                </SignInButton>
+              </SignedOut>
+
+              <SignedIn>
+                <Link href="/dashboard" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full shadow-md sm:w-auto">
+                    Go to Your Dashboard
+                  </Button>
+                </Link>
+              </SignedIn>
+
+              <Link href="#tools" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  Explore Tools
+                </Button>
+              </Link>
+            </div>
+
+            {/* Key Value Metrics / Badges */}
+            <div className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-6 border-t border-stone-200 pt-10 text-left sm:grid-cols-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-base text-emerald-800">
+                  🌱
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-stone-900">Reduce Waste</h2>
+                  <p className="mt-0.5 text-xs text-stone-600">
+                    Why buy a tile saw for a weekend project? Borrow from nearby.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-base text-emerald-800">
+                  🤝
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-stone-900">Verified Neighbors</h2>
+                  <p className="mt-0.5 text-xs text-stone-600">
+                    Clerk-authenticated community members and trusted lender badges.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-base text-emerald-800">
+                  ⚡
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-stone-900">Simple Reservations</h2>
+                  <p className="mt-0.5 text-xs text-stone-600">
+                    Request dates, pick up locally, and return with automated reminders.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="border-t border-stone-200 bg-white py-16 sm:py-24">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto mb-14 max-w-2xl text-center">
+              <span className="text-xs font-semibold tracking-wider text-emerald-800 uppercase">
+                Simple Lifecycle
+              </span>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+                How LendLoop Works
+              </h2>
+              <p className="mt-2 text-sm text-stone-600">
+                Sharing equipment should be transparent, safe, and effortless.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              <div className="rounded-xl border border-stone-200/80 bg-stone-50 p-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-800 text-sm font-bold text-white">
+                  1
+                </div>
+                <h3 className="text-base font-semibold text-stone-900">List or Discover</h3>
+                <p className="mt-2 text-sm text-stone-600">
+                  Browse available tools in the public catalog, or snap a photo of unused tools in
+                  your shed to share with your neighbors.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-stone-200/80 bg-stone-50 p-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-800 text-sm font-bold text-white">
+                  2
+                </div>
+                <h3 className="text-base font-semibold text-stone-900">Request & Approve</h3>
+                <p className="mt-2 text-sm text-stone-600">
+                  Choose a reservation date range. The lender receives an instant notification to
+                  approve or decline the loan request.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-stone-200/80 bg-stone-50 p-6">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-800 text-sm font-bold text-white">
+                  3
+                </div>
+                <h3 className="text-base font-semibold text-stone-900">Return & Repeat</h3>
+                <p className="mt-2 text-sm text-stone-600">
+                  Complete your project, return the equipment on time with automated reminder
+                  workflows, and build community trust.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Public Tools Section with Empty State (Convex ready) */}
+        <PublicToolsDirectory />
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-stone-200 bg-white py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-xs text-stone-500 sm:flex-row sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded bg-emerald-800 text-xs font-bold text-white">
+              L
+            </span>
+            <span className="font-semibold text-stone-800">LendLoop</span>
+            <span>—</span>
+            <span>Borrow what you need. Lend what you don&apos;t.</span>
+          </div>
+          <div>
+            <span>Next.js App Router • Clerk • Convex • Tailwind CSS</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
