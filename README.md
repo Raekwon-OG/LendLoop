@@ -217,8 +217,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | **Phase 0** | **Project foundation & initial UI** (Next.js, Clerk, Convex, Tailwind, landing page)  | ✅ **Completed** |
 | **Phase 1** | **Data model & backend architecture** (Schema, indexes, authorization helpers)        | ✅ **Completed** |
 | **Phase 2** | **Authentication & user sync** (Clerk-to-Convex synchronization, user profiles, RBAC) | ✅ **Completed** |
-| **Phase 3** | **Public tools directory** (Landing page Convex integration, category browsing)       | ⏳ Next          |
-| **Phase 4** | **Tool listings** (Create/edit/delete tools, ownership enforcement)                   | 📋 Planned       |
+| **Phase 3** | **Public tools directory** (Landing page Convex integration, category browsing)       | ✅ **Completed** |
+| **Phase 4** | **Tool listings** (Create/edit/delete tools, ownership enforcement)                   | ⏳ Next          |
 | **Phase 5** | **Borrowing lifecycle** (Date reservations, request queues, active loans, returns)    | 📋 Planned       |
 | **Phase 6** | **Admin and RBAC** (Moderation, loan audits, Trusted Lender designation)              | 📋 Planned       |
 | **Phase 7** | **n8n integration** (Docker Compose, HMAC webhooks, overdue notifications)            | 📋 Planned       |
