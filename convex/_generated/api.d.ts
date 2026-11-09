@@ -94,6 +94,167 @@ export declare const api: {
     >;
     remove: FunctionReference<"mutation", "public", { toolId: string }, { success: boolean; deletedToolId: string }>;
   };
+  borrowRequests: {
+    create: FunctionReference<
+      "mutation",
+      "public",
+      {
+        toolId: string;
+        startDate: number;
+        endDate: number;
+        note?: string;
+      },
+      string
+    >;
+    approve: FunctionReference<
+      "mutation",
+      "public",
+      { requestId: string },
+      { success: boolean; loanId: string }
+    >;
+    decline: FunctionReference<
+      "mutation",
+      "public",
+      { requestId: string },
+      { success: boolean }
+    >;
+    cancel: FunctionReference<
+      "mutation",
+      "public",
+      { requestId: string },
+      { success: boolean }
+    >;
+    getMyRequests: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        toolId: string;
+        requesterId: string;
+        requesterClerkId: string;
+        ownerId: string;
+        ownerClerkId: string;
+        startDate: number;
+        endDate: number;
+        status: "pending" | "approved" | "declined" | "cancelled";
+        note?: string;
+        createdAt: number;
+        updatedAt: number;
+        toolTitle: string;
+        toolCategory: string;
+        toolCondition: string;
+        ownerName: string;
+        ownerEmail: string;
+      }>
+    >;
+    getIncomingRequests: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        toolId: string;
+        requesterId: string;
+        requesterClerkId: string;
+        ownerId: string;
+        ownerClerkId: string;
+        startDate: number;
+        endDate: number;
+        status: "pending" | "approved" | "declined" | "cancelled";
+        note?: string;
+        createdAt: number;
+        updatedAt: number;
+        toolTitle: string;
+        toolCategory: string;
+        requesterName: string;
+        requesterEmail: string;
+      }>
+    >;
+  };
+  loans: {
+    markReturned: FunctionReference<
+      "mutation",
+      "public",
+      { loanId: string },
+      { success: boolean }
+    >;
+    getMyActiveLoans: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        toolId: string;
+        borrowRequestId: string;
+        lenderId: string;
+        lenderClerkId: string;
+        borrowerId: string;
+        borrowerClerkId: string;
+        startDate: number;
+        dueDate: number;
+        returnedDate?: number;
+        status: "active" | "returned" | "overdue";
+        computedStatus: "active" | "returned" | "overdue";
+        createdAt: number;
+        toolTitle: string;
+        toolCategory: string;
+        borrowerName: string;
+        borrowerEmail: string;
+        lenderName: string;
+        lenderEmail: string;
+        isCallerLender: boolean;
+      }>
+    >;
+    getMyLoanHistory: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        toolId: string;
+        borrowRequestId: string;
+        lenderId: string;
+        lenderClerkId: string;
+        borrowerId: string;
+        borrowerClerkId: string;
+        startDate: number;
+        dueDate: number;
+        returnedDate?: number;
+        status: "active" | "returned" | "overdue";
+        createdAt: number;
+        toolTitle: string;
+        toolCategory: string;
+        borrowerName: string;
+        lenderName: string;
+        isCallerLender: boolean;
+      }>
+    >;
+    getAllLoans: FunctionReference<
+      "query",
+      "public",
+      { statusFilter?: string },
+      Array<{
+        _id: string;
+        toolId: string;
+        borrowRequestId: string;
+        lenderId: string;
+        lenderClerkId: string;
+        borrowerId: string;
+        borrowerClerkId: string;
+        startDate: number;
+        dueDate: number;
+        returnedDate?: number;
+        status: "active" | "returned" | "overdue";
+        createdAt: number;
+        toolTitle: string;
+        borrowerName: string;
+        borrowerEmail: string;
+        lenderName: string;
+        lenderEmail: string;
+      }>
+    >;
+  };
   [key: string]: unknown;
 };
 
