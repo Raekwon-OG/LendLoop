@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
 
-type AdminTab = "members" | "listings" | "loans";
+type AdminTab = "members" | "listings" | "loans" | "automations";
 
 export function AdminDashboardPanel() {
   const [activeTab, setActiveTab] = useState<AdminTab>("members");
   const [loanStatusFilter, setLoanStatusFilter] = useState<string>("all");
+  const [expandedPayloadId, setExpandedPayloadId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -25,6 +26,7 @@ export function AdminDashboardPanel() {
     api.loans.getAllLoans,
     loanStatusFilter === "all" ? {} : { statusFilter: loanStatusFilter }
   );
+  const automationEvents = useQuery(api.automations.listAllAutomationEvents, { limit: 50 });
 
   // Mutations
   const setTrustedLenderMutation = useMutation(api.users.setTrustedLender);
@@ -235,6 +237,17 @@ export function AdminDashboardPanel() {
           }`}
         >
           Global Loans Oversight ({loans?.length ?? 0})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("automations")}
+          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
+            activeTab === "automations"
+              ? "border-emerald-800 text-emerald-900"
+              : "border-transparent text-stone-500 hover:text-stone-800"
+          }`}
+        >
+          Automation Logs ({automationEvents?.length ?? 0})
         </button>
       </div>
 
@@ -495,6 +508,99 @@ export function AdminDashboardPanel() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 4: Automation Logs & Incident Observability */}
+      {activeTab === "automations" && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CardTitle>Automation Logs &amp; Execution History</CardTitle>
+              <InfoTooltip text="Live audit log of outgoing webhooks, overdue reminder dispatches, and idempotent write-back events." />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {automationEvents === undefined ? (
+              <p className="text-sm text-stone-500 py-4">Loading automation events...</p>
+            ) : automationEvents.length === 0 ? (
+              <p className="text-sm text-stone-500 py-4">No automation events recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-stone-200 text-xs text-stone-500 uppercase tracking-wider bg-stone-50">
+                    <tr>
+                      <th className="py-3 px-4">Event Type</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Idempotency Key</th>
+                      <th className="py-3 px-4">Attempts</th>
+                      <th className="py-3 px-4">Logged</th>
+                      <th className="py-3 px-4 text-right">Payload</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 font-mono text-xs">
+                    {automationEvents.map((evt) => (
+                      <tr key={evt._id} className="hover:bg-stone-50/50">
+                        <td className="py-3 px-4 font-sans font-medium text-stone-900">
+                          <Badge
+                            variant={
+                              evt.eventType === "reminder_sent"
+                                ? "borrowed"
+                                : evt.eventType === "request_created"
+                                  ? "accent"
+                                  : "neutral"
+                            }
+                          >
+                            {evt.eventType}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant={
+                              evt.status === "processed"
+                                ? "available"
+                                : evt.status === "failed"
+                                  ? "danger"
+                                  : "borrowed"
+                            }
+                          >
+                            {evt.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-stone-600 truncate max-w-[180px]">
+                          {evt.idempotencyKey}
+                        </td>
+                        <td className="py-3 px-4 text-stone-600 font-sans">
+                          {evt.attempts} {evt.attempts === 1 ? "attempt" : "attempts"}
+                        </td>
+                        <td className="py-3 px-4 font-sans text-stone-500">
+                          {formatTimeAgo(evt.createdAt)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-sans">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedPayloadId(
+                                expandedPayloadId === evt._id ? null : evt._id
+                              )
+                            }
+                            className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
+                          >
+                            {expandedPayloadId === evt._id ? "Hide" : "Inspect"}
+                          </button>
+                          {expandedPayloadId === evt._id && (
+                            <div className="mt-2 text-left bg-stone-900 text-stone-100 p-2.5 rounded-lg max-w-md ml-auto overflow-x-auto whitespace-pre-wrap font-mono text-[11px]">
+                              {JSON.stringify(JSON.parse(evt.payload || "{}"), null, 2)}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

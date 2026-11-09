@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { action, mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
 import { createSignedWebhookHeaders, timingSafeEqual } from "./lib/hmac";
+import { requireAdmin } from "./lib/auth";
 
 /**
  * Query for the daily n8n overdue reminder workflow.
@@ -135,6 +137,40 @@ export const recordReminderWriteback = mutation({
 });
 
 /**
+ * Updates status and retry count of an automation event record.
+ */
+export const updateAutomationEventStatus = mutation({
+  args: {
+    resourceId: v.string(),
+    eventType: v.string(),
+    status: v.union(v.literal("pending"), v.literal("processed"), v.literal("failed")),
+    attempts: v.number(),
+    error: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const events = await ctx.db
+      .query("automationEvents")
+      .withIndex("by_resource", (q) => q.eq("resourceId", args.resourceId))
+      .collect();
+
+    const matching = events
+      .filter((e) => e.eventType === args.eventType)
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+
+    if (matching) {
+      await ctx.db.patch(matching._id, {
+        status: args.status,
+        attempts: args.attempts,
+        lastAttemptAt: Date.now(),
+      });
+      return { success: true, eventId: matching._id };
+    }
+
+    return { success: false, message: "No matching automation event found." };
+  },
+});
+
+/**
  * Convex Action: Dispatches an outgoing HMAC-signed webhook to n8n.
  * Invoked when borrow requests are created or updated.
  *
@@ -150,7 +186,7 @@ export const dispatchWebhookToN8n = action({
     resourceId: v.string(),
     payload: v.string(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const secret = process.env.N8N_WEBHOOK_SECRET ?? "lendloop_n8n_hmac_secret_dev";
     const headers = await createSignedWebhookHeaders(args.payload, secret);
 
@@ -168,6 +204,17 @@ export const dispatchWebhookToN8n = action({
         });
 
         if (response.ok) {
+          try {
+            await ctx.runMutation(api.automations.updateAutomationEventStatus, {
+              resourceId: args.resourceId,
+              eventType: args.eventType,
+              status: "processed",
+              attempts: attempt,
+            });
+          } catch (logErr) {
+            console.error("[dispatchWebhookToN8n] Failed to update event success status:", logErr);
+          }
+
           return {
             success: true,
             status: response.status,
@@ -184,6 +231,18 @@ export const dispatchWebhookToN8n = action({
           await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 500));
         }
       }
+    }
+
+    try {
+      await ctx.runMutation(api.automations.updateAutomationEventStatus, {
+        resourceId: args.resourceId,
+        eventType: args.eventType,
+        status: "failed",
+        attempts: attempt,
+        error: lastError?.message,
+      });
+    } catch (logErr) {
+      console.error("[dispatchWebhookToN8n] Failed to update event failure status:", logErr);
     }
 
     return {
@@ -204,9 +263,24 @@ export const getResourceAutomationHistory = query({
   handler: async (ctx, args) => {
     const events = await ctx.db
       .query("automationEvents")
+      .withIndex("by_resource", (q) => q.eq("resourceId", args.resourceId))
       .collect();
 
-    const matching = events.filter((e) => e.resourceId === args.resourceId);
-    return matching.sort((a, b) => b.createdAt - a.createdAt);
+    return events.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
+/**
+ * Admin query: Lists all platform automation events and delivery attempts for observability.
+ */
+export const listAllAutomationEvents = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+    const events = await ctx.db.query("automationEvents").collect();
+    const sorted = events.sort((a, b) => b.createdAt - a.createdAt);
+    return args.limit ? sorted.slice(0, args.limit) : sorted;
   },
 });

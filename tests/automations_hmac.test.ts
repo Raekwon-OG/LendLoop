@@ -284,6 +284,58 @@ describe("Automations & n8n Two-Way HMAC Security", () => {
     });
   });
 
+  describe("Automation Event Observability & Status Tracking", () => {
+    it("updates automation event status and attempt count", async () => {
+      let patchedData: Record<string, unknown> | null = null;
+      const mockEvent = {
+        _id: "evt_123" as unknown as Id<"automationEvents">,
+        eventType: "request_created",
+        resourceId: "req_xyz",
+        status: "pending",
+        attempts: 0,
+        createdAt: 1000,
+      };
+
+      const handler = (
+        automations.updateAutomationEventStatus as unknown as MutationCallable<
+          {
+            resourceId: string;
+            eventType: string;
+            status: "pending" | "processed" | "failed";
+            attempts: number;
+            error?: string;
+          },
+          { success: boolean; eventId?: unknown }
+        >
+      )._handler;
+
+      const mockCtx = {
+        db: {
+          query: () => ({
+            withIndex: () => ({
+              collect: async () => [mockEvent],
+            }),
+          }),
+          patch: async (_id: unknown, data: Record<string, unknown>) => {
+            patchedData = data;
+          },
+        },
+      } as unknown as MutationCtx;
+
+      const result = await handler(mockCtx, {
+        resourceId: "req_xyz",
+        eventType: "request_created",
+        status: "processed",
+        attempts: 1,
+      });
+
+      expect(result.success).toBe(true);
+      expect(patchedData).not.toBeNull();
+      expect((patchedData as Record<string, unknown> | null)?.status).toBe("processed");
+      expect((patchedData as Record<string, unknown> | null)?.attempts).toBe(1);
+    });
+  });
+
   describe("n8n Workflow JSON File Integrity", () => {
     const workflowsDir = path.join(process.cwd(), "n8n", "workflows");
 

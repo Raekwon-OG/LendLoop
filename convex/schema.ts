@@ -114,7 +114,8 @@ export default defineSchema({
   })
     .index("by_status", ["status"])
     .index("by_idempotency_key", ["idempotencyKey"])
-    .index("by_event_type", ["eventType"]),
+    .index("by_event_type", ["eventType"])
+    .index("by_resource", ["resourceId"]),
 
   healthCheck: defineTable({
     service: v.string(),

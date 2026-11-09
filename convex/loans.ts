@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
 import { requireAdmin, requireCurrentUserRecord } from "./lib/auth";
 
@@ -50,22 +51,36 @@ export const markReturned = mutation({
     });
 
     // 3. Queue automation event for n8n
+    const returnPayload = JSON.stringify({
+      eventType: "request_status_changed",
+      requestId: loan.borrowRequestId,
+      loanId: loan._id,
+      toolId: loan.toolId,
+      newStatus: "returned",
+      returnedDate: now,
+      lenderId: loan.lenderId,
+      borrowerId: loan.borrowerId,
+    });
+
     await ctx.db.insert("automationEvents", {
       eventType: "request_status_changed",
       resourceId: loan._id,
-      payload: JSON.stringify({
-        loanId: loan._id,
-        toolId: loan.toolId,
-        newStatus: "returned",
-        returnedDate: now,
-        lenderId: loan.lenderId,
-        borrowerId: loan.borrowerId,
-      }),
+      payload: returnPayload,
       status: "pending",
       idempotencyKey: `loan_returned_${loan._id}_${now}`,
       attempts: 0,
       createdAt: now,
     });
+
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
+    if (webhookUrl && ctx.scheduler) {
+      await ctx.scheduler.runAfter(0, api.automations.dispatchWebhookToN8n, {
+        endpointUrl: webhookUrl,
+        eventType: "request_status_changed",
+        resourceId: loan._id,
+        payload: returnPayload,
+      });
+    }
 
     return { success: true };
   },
