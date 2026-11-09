@@ -1,6 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import type { ToolSummary } from "@/types";
@@ -11,6 +13,8 @@ interface PublicToolsDirectoryProps {
 }
 
 export function PublicToolsDirectory({ tools = [], isLoading = false }: PublicToolsDirectoryProps) {
+  const { isSignedIn } = useAuth();
+
   return (
     <section id="tools" className="border-t border-stone-200 bg-stone-100/60 py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -78,16 +82,15 @@ export function PublicToolsDirectory({ tools = [], isLoading = false }: PublicTo
               and kickstart your neighborhood lending circle.
             </p>
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button variant="primary">Sign In to Lend or Borrow</Button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
+              {isSignedIn ? (
                 <Link href="/dashboard/listings">
                   <Button variant="primary">List the First Tool</Button>
                 </Link>
-              </SignedIn>
+              ) : (
+                <Link href="/sign-in">
+                  <Button variant="primary">Sign In to Lend or Borrow</Button>
+                </Link>
+              )}
             </div>
           </div>
         ) : (
@@ -114,7 +117,7 @@ export function PublicToolsDirectory({ tools = [], isLoading = false }: PublicTo
                 </div>
                 <div className="mt-6 flex items-center justify-between border-t border-stone-100 pt-4">
                   <span className="text-xs text-stone-500">Condition: {tool.condition}</span>
-                  <Link href={`/sign-in`}>
+                  <Link href="/sign-in">
                     <Button variant="outline" size="sm">
                       Borrow
                     </Button>

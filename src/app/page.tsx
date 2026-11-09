@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { PublicToolsDirectory } from "@/components/tools/PublicToolsDirectory";
 import { Button } from "@/components/ui/Button";
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = await auth();
+
   return (
     <div className="flex min-h-screen flex-col bg-stone-50 text-stone-900">
       {/* Navbar */}
@@ -34,21 +36,19 @@ export default function Home() {
 
             {/* Hero CTAs */}
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button size="lg" className="w-full shadow-md sm:w-auto">
-                    Sign in to Lend or Borrow
-                  </Button>
-                </SignInButton>
-              </SignedOut>
-
-              <SignedIn>
+              {userId ? (
                 <Link href="/dashboard" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full shadow-md sm:w-auto">
                     Go to Your Dashboard
                   </Button>
                 </Link>
-              </SignedIn>
+              ) : (
+                <Link href="/sign-in" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full shadow-md sm:w-auto">
+                    Sign in to Lend or Borrow
+                  </Button>
+                </Link>
+              )}
 
               <Link href="#tools" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">

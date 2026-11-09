@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 
 export default function AuthLayout({
@@ -19,7 +19,17 @@ export default function AuthLayout({
           Borrow what you need. Lend what you don&apos;t.
         </p>
       </div>
-      <div className="flex w-full max-w-md justify-center">{children}</div>
+      <div className="flex w-full max-w-md justify-center">
+        <Suspense
+          fallback={
+            <div className="flex h-96 items-center justify-center text-sm text-stone-400">
+              Loading authentication...
+            </div>
+          }
+        >
+          {children}
+        </Suspense>
+      </div>
     </div>
   );
 }

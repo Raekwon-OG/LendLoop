@@ -1,9 +1,16 @@
 "use client";
 
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useAuth } from "@clerk/nextjs";
+
+const convexUrl =
+  process.env.NEXT_PUBLIC_CONVEX_URL && process.env.NEXT_PUBLIC_CONVEX_URL.startsWith("http")
+    ? process.env.NEXT_PUBLIC_CONVEX_URL
+    : "https://placeholder-lendloop.convex.cloud";
+
+const convex = new ConvexReactClient(convexUrl);
 
 interface ConvexClientProviderProps {
   children: ReactNode;
@@ -14,16 +21,6 @@ interface ConvexClientProviderProps {
  * Passes Clerk session auth tokens to Convex functions on every call.
  */
 export function ConvexClientProvider({ children }: ConvexClientProviderProps) {
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-
-  const convex = useMemo(() => {
-    const url =
-      convexUrl && convexUrl.startsWith("http")
-        ? convexUrl
-        : "https://placeholder-lendloop.convex.cloud";
-    return new ConvexReactClient(url);
-  }, [convexUrl]);
-
   return (
     <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
       {children}

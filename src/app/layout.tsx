@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
@@ -29,7 +30,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
         <body className="flex min-h-full flex-col">
-          <ConvexClientProvider>{children}</ConvexClientProvider>
+          <Suspense fallback={null}>
+            <ConvexClientProvider>{children}</ConvexClientProvider>
+          </Suspense>
         </body>
       </html>
     </ClerkProvider>
