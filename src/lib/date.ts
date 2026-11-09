@@ -28,3 +28,4 @@ export function formatTimeAgo(timestamp: number): string {
   }
   return `${diffDays} days ago`;
 }
+
