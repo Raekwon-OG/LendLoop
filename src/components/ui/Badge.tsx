@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "available" | "borrowed" | "neutral" | "accent";
+  variant?: "available" | "borrowed" | "neutral" | "accent" | "danger";
 }
 
 export function Badge({ className = "", variant = "neutral", children, ...props }: BadgeProps) {
@@ -13,6 +13,7 @@ export function Badge({ className = "", variant = "neutral", children, ...props 
     borrowed: "bg-amber-100 text-amber-800 border border-amber-200",
     neutral: "bg-stone-100 text-stone-700 border border-stone-200",
     accent: "bg-stone-800 text-white border border-stone-900",
+    danger: "bg-red-100 text-red-800 border border-red-200",
   };
 
   return (
