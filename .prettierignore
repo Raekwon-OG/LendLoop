@@ -1,0 +1,9 @@
+.next
+node_modules
+dist
+build
+coverage
+*.tsbuildinfo
+next-env.d.ts
+convex/_generated
+Phases.MD
