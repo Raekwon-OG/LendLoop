@@ -219,8 +219,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | **Phase 2** | **Authentication & user sync** (Clerk-to-Convex synchronization, user profiles, RBAC) | ✅ **Completed** |
 | **Phase 3** | **Public tools directory** (Landing page Convex integration, category browsing)       | ✅ **Completed** |
 | **Phase 4** | **Tool listings** (Create/edit/delete tools, ownership enforcement)                   | ✅ **Completed** |
-| **Phase 5** | **Borrowing lifecycle** (Date reservations, request queues, active loans, returns)    | ⏳ Next          |
-| **Phase 6** | **Admin and RBAC** (Moderation, loan audits, Trusted Lender designation)              | 📋 Planned       |
+| **Phase 5** | **Borrowing lifecycle** (Date reservations, request queues, active loans, returns)    | ✅ **Completed** |
+| **Phase 6** | **Admin and RBAC** (Moderation, loan audits, Trusted Lender designation)              | ⏳ Next          |
 | **Phase 7** | **n8n integration** (Docker Compose, HMAC webhooks, overdue notifications)            | 📋 Planned       |
 | **Phase 8** | **Reliability & observability** (Idempotency, retries, failure handling, audit logs)  | 📋 Planned       |
 | **Phase 9** | **Testing, polish & delivery** (End-to-end audit, accessibility, final submission)    | 📋 Planned       |
