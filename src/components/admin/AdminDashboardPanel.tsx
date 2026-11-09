@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { formatTimeAgo } from "@/lib/date";
 
 type AdminTab = "members" | "listings" | "loans";
 
@@ -471,6 +472,11 @@ export function AdminDashboardPanel() {
                             >
                               {isOverdue ? "Overdue" : loan.status}
                             </Badge>
+                            {loan.lastReminderSentAt && (
+                              <p className="text-[10px] text-amber-700 mt-1 font-medium">
+                                🔔 Reminder sent {formatTimeAgo(loan.lastReminderSentAt)}
+                              </p>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-right">
                             {loan.status !== "returned" && (

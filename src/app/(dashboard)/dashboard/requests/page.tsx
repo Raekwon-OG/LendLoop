@@ -7,6 +7,7 @@ import { api } from "@convex/_generated/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { formatTimeAgo } from "@/lib/date";
 
 type RequestStatusFilter = "All" | "pending" | "approved" | "declined" | "cancelled";
 
@@ -98,6 +99,14 @@ export default function MyRequestsPage() {
                         Due Return: {new Date(loan.dueDate).toLocaleDateString()}
                       </span>
                     </div>
+                    {loan.lastReminderSentAt ? (
+                      <div className="mt-3 flex items-center gap-1.5 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800 border border-amber-200">
+                        <span>🔔</span>
+                        <span>
+                          Automated reminder sent {formatTimeAgo(loan.lastReminderSentAt)} ({loan.reminderCount ?? 1} total)
+                        </span>
+                      </div>
+                    ) : null}
                     <p className="text-xs text-stone-500 mt-3 italic">
                       When finished, return the equipment to {loan.lenderName}. They will mark the
                       loan as returned on their dashboard.

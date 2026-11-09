@@ -7,6 +7,7 @@ import { api } from "@convex/_generated/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { formatTimeAgo } from "@/lib/date";
 
 type IncomingStatusFilter = "pending" | "All" | "approved" | "declined";
 
@@ -171,12 +172,21 @@ export default function IncomingRequestsPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 flex items-center justify-between mb-4">
+                    <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 flex items-center justify-between mb-3">
                       <span>Lent On: {new Date(loan.startDate).toLocaleDateString()}</span>
                       <span className={isOverdue ? "font-bold text-red-700" : ""}>
                         Due Back: {new Date(loan.dueDate).toLocaleDateString()}
                       </span>
                     </div>
+
+                    {loan.lastReminderSentAt ? (
+                      <div className="mb-3 flex items-center gap-1.5 rounded bg-amber-50 px-2 py-1 text-xs text-amber-800 border border-amber-200">
+                        <span>🔔</span>
+                        <span>
+                          Automated reminder sent {formatTimeAgo(loan.lastReminderSentAt)} ({loan.reminderCount ?? 1} total)
+                        </span>
+                      </div>
+                    ) : null}
 
                     <div className="flex items-center justify-end">
                       <Button
