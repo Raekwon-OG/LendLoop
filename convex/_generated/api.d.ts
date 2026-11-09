@@ -26,7 +26,20 @@ export declare const api: {
       { targetUserId: string; isTrustedLender: boolean },
       unknown
     >;
-    listUsers: FunctionReference<"query", "public", Record<string, never>, unknown>;
+    listUsers: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        clerkId: string;
+        name: string;
+        email: string;
+        role: "user" | "admin";
+        isTrustedLender: boolean;
+        createdAt: number;
+      }>
+    >;
   };
   tools: {
     getAvailable: FunctionReference<
@@ -93,6 +106,32 @@ export declare const api: {
       unknown
     >;
     remove: FunctionReference<"mutation", "public", { toolId: string }, { success: boolean; deletedToolId: string }>;
+    adminListAllTools: FunctionReference<
+      "query",
+      "public",
+      Record<string, never>,
+      Array<{
+        _id: string;
+        ownerId: string;
+        ownerClerkId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: "Like New" | "Good" | "Fair";
+        status: "available" | "borrowed" | "maintenance" | "archived";
+        createdAt: number;
+        updatedAt: number;
+        ownerName: string;
+        ownerEmail: string;
+        isOwnerTrusted: boolean;
+      }>
+    >;
+    adminRemoveTool: FunctionReference<
+      "mutation",
+      "public",
+      { toolId: string; reason?: string },
+      { success: boolean; deletedToolId: string; toolTitle: string }
+    >;
   };
   borrowRequests: {
     create: FunctionReference<
@@ -222,6 +261,8 @@ export declare const api: {
         dueDate: number;
         returnedDate?: number;
         status: "active" | "returned" | "overdue";
+        computedStatus: "active" | "returned" | "overdue";
+        isOverdue: boolean;
         createdAt: number;
         toolTitle: string;
         toolCategory: string;
@@ -246,6 +287,8 @@ export declare const api: {
         dueDate: number;
         returnedDate?: number;
         status: "active" | "returned" | "overdue";
+        computedStatus: "active" | "returned" | "overdue";
+        isOverdue: boolean;
         createdAt: number;
         toolTitle: string;
         borrowerName: string;

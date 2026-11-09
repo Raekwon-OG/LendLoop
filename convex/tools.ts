@@ -1,7 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import {
   assertToolOwnerOrAdmin,
+  requireAdmin,
   requireAuthenticatedUser,
   requireCurrentUserRecord,
 } from "./lib/auth";
@@ -238,6 +240,82 @@ export const remove = mutation({
     return {
       success: true,
       deletedToolId: args.toolId,
+    };
+  },
+});
+
+/**
+ * Admin query: Returns all equipment listings in the system along with owner details.
+ * Strictly restricted to users with the 'admin' role.
+ */
+export const adminListAllTools = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+
+    const allTools = await ctx.db.query("tools").collect();
+
+    const enriched = await Promise.all(
+      allTools.map(async (tool) => {
+        const owner = (await ctx.db.get(tool.ownerId)) as Doc<"users"> | null;
+        return {
+          ...tool,
+          ownerName: owner?.name ?? "Unknown Neighbor",
+          ownerEmail: owner?.email ?? "",
+          isOwnerTrusted: owner?.isTrustedLender ?? false,
+        };
+      })
+    );
+
+    return enriched.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
+/**
+ * Admin mutation: Moderates and permanently removes an equipment listing.
+ * Strictly restricted to users with the 'admin' role.
+ */
+export const adminRemoveTool = mutation({
+  args: {
+    toolId: v.id("tools"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { userRecord } = await requireAdmin(ctx);
+
+    const tool = await ctx.db.get(args.toolId);
+    if (!tool) {
+      throw new Error("Tool listing not found.");
+    }
+
+    // Delete the listing
+    await ctx.db.delete(args.toolId);
+
+    // Queue moderation event for n8n/audit
+    const now = Date.now();
+    await ctx.db.insert("automationEvents", {
+      eventType: "request_status_changed",
+      resourceId: args.toolId,
+      payload: JSON.stringify({
+        action: "admin_listing_removed",
+        toolId: args.toolId,
+        toolTitle: tool.title,
+        ownerId: tool.ownerId,
+        moderatorId: userRecord._id,
+        moderatorEmail: userRecord.email,
+        reason: args.reason ?? "Administrative moderation",
+        removedAt: now,
+      }),
+      status: "processed",
+      idempotencyKey: `admin_remove_${args.toolId}_${now}`,
+      attempts: 1,
+      createdAt: now,
+    });
+
+    return {
+      success: true,
+      deletedToolId: args.toolId,
+      toolTitle: tool.title,
     };
   },
 });

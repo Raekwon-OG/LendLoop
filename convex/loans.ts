@@ -213,8 +213,12 @@ export const getAllLoans = query({
           ctx.db.get(loan.lenderId),
         ])) as [Doc<"tools"> | null, Doc<"users"> | null, Doc<"users"> | null];
 
+        const isOverdue = loan.status === "active" && loan.dueDate < Date.now();
+
         return {
           ...loan,
+          isOverdue,
+          computedStatus: isOverdue ? ("overdue" as const) : loan.status,
           toolTitle: tool?.title ?? "Unknown Equipment",
           borrowerName: borrower?.name ?? "Unknown",
           borrowerEmail: borrower?.email ?? "",
