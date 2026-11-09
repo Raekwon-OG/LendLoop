@@ -20,6 +20,8 @@ const clientEnvSchema = z.object({
  */
 const serverEnvSchema = z.object({
   CLERK_SECRET_KEY: z.string().min(1, "Missing CLERK_SECRET_KEY"),
+  CLERK_WEBHOOK_SECRET: z.string().optional(),
+  INITIAL_ADMIN_EMAIL: z.string().email().optional(),
   CONVEX_DEPLOYMENT: z.string().optional(),
 });
 
@@ -76,6 +78,8 @@ export function getServerEnv(): ServerEnv {
 
   const parsed = serverEnvSchema.safeParse({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+    CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
+    INITIAL_ADMIN_EMAIL: process.env.INITIAL_ADMIN_EMAIL,
     CONVEX_DEPLOYMENT: process.env.CONVEX_DEPLOYMENT,
   });
 

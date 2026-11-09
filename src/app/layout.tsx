@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/providers/ConvexClientProvider";
+import { UserSyncProvider } from "@/components/providers/UserSyncProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,9 @@ export default function RootLayout({
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
         <body className="flex min-h-full flex-col">
           <Suspense fallback={null}>
-            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <ConvexClientProvider>
+              <UserSyncProvider>{children}</UserSyncProvider>
+            </ConvexClientProvider>
           </Suspense>
         </body>
       </html>
