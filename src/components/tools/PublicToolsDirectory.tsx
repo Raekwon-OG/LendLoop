@@ -153,33 +153,40 @@ export function PublicToolsDirectory({ initialCategory = "All" }: PublicToolsDir
             )}
           </div>
         ) : (
-          /* Live Tool Cards Grid */
+          /* Live Tool Cards Grid (Public: Name, Category, and optional photo only) */
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {tools.map((tool) => (
               <div
                 key={tool._id}
-                className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-6 shadow-xs transition-colors hover:border-emerald-600"
+                className="flex flex-col justify-between overflow-hidden rounded-xl border border-stone-200 bg-white shadow-xs transition-colors hover:border-emerald-600"
               >
                 <div>
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
-                      {tool.category}
-                    </span>
-                    <Badge variant={tool.isAvailable ? "available" : "borrowed"}>
-                      {tool.isAvailable ? "Available" : "Checked Out"}
-                    </Badge>
-                  </div>
-                  <h4 className="text-lg font-semibold text-stone-900">{tool.title}</h4>
-                  {tool.description && (
-                    <p className="mt-2 line-clamp-2 text-sm text-stone-600">{tool.description}</p>
+                  {tool.imageUrl && (
+                    <div className="h-44 w-full overflow-hidden border-b border-stone-100 bg-stone-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={tool.imageUrl}
+                        alt={tool.title}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                   )}
+                  <div className="p-6 pb-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+                        {tool.category}
+                      </span>
+                      <Badge variant="available">Available</Badge>
+                    </div>
+                    <h4 className="text-lg font-semibold text-stone-900">{tool.title}</h4>
+                  </div>
                 </div>
-                <div className="mt-6 flex items-center justify-between border-t border-stone-100 pt-4">
-                  <span className="text-xs text-stone-500">Condition: {tool.condition}</span>
+                <div className="px-6 pb-6 pt-3 flex items-center justify-between border-t border-stone-100">
+                  <span className="text-xs text-stone-500">Sign in for details</span>
                   {isSignedIn ? (
                     <Link href={`/dashboard/tools`}>
                       <Button variant="outline" size="sm">
-                        Borrow
+                        View &amp; Borrow
                       </Button>
                     </Link>
                   ) : (

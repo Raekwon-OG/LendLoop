@@ -26,6 +26,7 @@ export default function MyListingsPage() {
     category: string;
     condition: ToolCondition;
     status: ToolStatus;
+    imageUrl?: string | null;
   } | null>(null);
 
   const isLoading = myTools === undefined;
@@ -42,6 +43,7 @@ export default function MyListingsPage() {
     category: string;
     condition: ToolCondition;
     status: ToolStatus;
+    imageUrl?: string | null;
   }) => {
     setToolToEdit(tool);
     setIsModalOpen(true);
@@ -188,31 +190,43 @@ export default function MyListingsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredTools.map((tool) => (
-            <Card key={tool._id} className="flex flex-col justify-between">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                    {tool.category}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <Badge
-                      variant={
-                        tool.status === "available"
-                          ? "available"
-                          : tool.status === "borrowed"
-                            ? "borrowed"
-                            : "neutral"
-                      }
-                    >
-                      {tool.status.charAt(0).toUpperCase() + tool.status.slice(1)}
-                    </Badge>
+            <Card key={tool._id} className="flex flex-col justify-between overflow-hidden">
+              <div>
+                {tool.imageUrl && (
+                  <div className="h-44 w-full overflow-hidden border-b border-stone-100 bg-stone-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={tool.imageUrl}
+                      alt={tool.title}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
-                </div>
-                <CardTitle className="text-lg">{tool.title}</CardTitle>
-                <CardDescription className="line-clamp-2 mt-1">
-                  {tool.description}
-                </CardDescription>
-              </CardHeader>
+                )}
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+                      {tool.category}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={
+                          tool.status === "available"
+                            ? "available"
+                            : tool.status === "borrowed"
+                              ? "borrowed"
+                              : "neutral"
+                        }
+                      >
+                        {tool.status.charAt(0).toUpperCase() + tool.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardTitle className="text-lg">{tool.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 mt-1">
+                    {tool.description}
+                  </CardDescription>
+                </CardHeader>
+              </div>
               <CardContent>
                 <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 mb-4">
                   <span>Condition: <strong>{tool.condition}</strong></span>
@@ -240,6 +254,7 @@ export default function MyListingsPage() {
                         category: tool.category,
                         condition: tool.condition,
                         status: tool.status,
+                        imageUrl: tool.imageUrl,
                       })
                     }
                   >

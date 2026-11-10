@@ -15,6 +15,7 @@ interface ToolToEdit {
   category: string;
   condition: ToolCondition;
   status: ToolStatus;
+  imageUrl?: string | null;
 }
 
 interface ToolListingModalProps {
@@ -46,11 +47,43 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
   const [status, setStatus] = useState<ToolStatus>(
     toolToEdit ? toolToEdit.status : "available"
   );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    toolToEdit?.imageUrl ?? null
+  );
+  const [removeExistingImage, setRemoveExistingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createToolMutation = useMutation(api.tools.create);
   const updateToolMutation = useMutation(api.tools.update);
+  const generateUploadUrlMutation = useMutation(api.tools.generateUploadUrl);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file (PNG, JPG, WEBP).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be 5MB or smaller.");
+      return;
+    }
+
+    setError(null);
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setRemoveExistingImage(false);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setRemoveExistingImage(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +105,26 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
     setIsSubmitting(true);
 
     try {
+      let uploadedStorageId: Id<"_storage"> | undefined = undefined;
+
+      if (selectedFile) {
+        const postUrl = await generateUploadUrlMutation({});
+        const uploadResult = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": selectedFile.type },
+          body: selectedFile,
+        });
+
+        if (!uploadResult.ok) {
+          throw new Error("Failed to upload tool photo to storage.");
+        }
+
+        const { storageId } = (await uploadResult.json()) as {
+          storageId: Id<"_storage">;
+        };
+        uploadedStorageId = storageId;
+      }
+
       if (isEditing && toolToEdit) {
         await updateToolMutation({
           toolId: toolToEdit._id as Id<"tools">,
@@ -80,6 +133,8 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
           category,
           condition,
           status,
+          ...(uploadedStorageId ? { imageStorageId: uploadedStorageId } : {}),
+          ...(removeExistingImage && !uploadedStorageId ? { removeImage: true } : {}),
         });
       } else {
         await createToolMutation({
@@ -87,6 +142,7 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
           description: trimmedDesc,
           category,
           condition,
+          ...(uploadedStorageId ? { imageStorageId: uploadedStorageId } : {}),
         });
       }
 
@@ -235,6 +291,74 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
           />
         </div>
 
+        {/* Tool Photo Upload (Convex File Storage) */}
+        <div>
+          <label
+            htmlFor="tool-photo"
+            className="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-1"
+          >
+            Equipment Photo (Optional)
+          </label>
+
+          {previewUrl ? (
+            <div className="relative rounded-xl border border-stone-200 bg-stone-50 p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt="Tool preview"
+                className="h-40 w-full rounded-lg object-cover"
+              />
+              <div className="mt-2 flex items-center justify-between px-1">
+                <span className="text-xs text-stone-500 truncate max-w-[240px]">
+                  {selectedFile ? selectedFile.name : "Current listing photo"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="tool-photo-replace"
+                    className="cursor-pointer rounded-md border border-stone-300 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                  >
+                    Replace
+                    <input
+                      id="tool-photo-replace"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="sr-only"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="cursor-pointer rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <label
+              htmlFor="tool-photo"
+              className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-300 bg-stone-50/60 px-4 py-5 text-center transition-colors hover:border-emerald-700 hover:bg-emerald-50/30"
+            >
+              <span className="text-xl mb-1">📷</span>
+              <span className="text-xs font-semibold text-stone-700">
+                Click to upload a tool photo
+              </span>
+              <span className="mt-0.5 text-[11px] text-stone-400">
+                PNG, JPG, or WEBP up to 5MB (stored in Convex File Storage)
+              </span>
+              <input
+                id="tool-photo"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="sr-only"
+              />
+            </label>
+          )}
+        </div>
+
         {/* Action Buttons */}
         <div className="mt-6 pt-4 border-t border-stone-100 flex items-center justify-end gap-3">
           <Button
@@ -273,7 +397,7 @@ export function ToolListingModal({
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 sm:p-8 shadow-xl border border-stone-200">
+      <div className="relative max-h-[90vh] overflow-y-auto w-full max-w-lg rounded-2xl bg-white p-6 sm:p-8 shadow-xl border border-stone-200">
         <ToolForm
           key={toolToEdit?._id ?? "create-new-tool"}
           toolToEdit={toolToEdit}
