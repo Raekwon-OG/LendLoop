@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { PublicToolsDirectory } from "@/components/tools/PublicToolsDirectory";
+import { HeroAnimatedHeading } from "@/components/home/HeroAnimatedHeading";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 
@@ -17,11 +18,8 @@ export default async function Home() {
       <main className="flex-1">
         <section className="relative overflow-hidden bg-radial from-stone-100 to-stone-50 py-20 sm:py-28 lg:py-32">
           <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-            {/* Tagline Heading */}
-            <h1 className="mx-auto max-w-3xl text-4xl leading-[1.1] font-extrabold tracking-tight text-stone-900 sm:text-6xl">
-              Borrow what you need. <br className="hidden sm:inline" />
-              <span className="text-emerald-800">Lend what you don&apos;t.</span>
-            </h1>
+            {/* Animated Tagline Heading */}
+            <HeroAnimatedHeading />
 
             {/* Short Product Explanation */}
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-600 sm:text-xl">
