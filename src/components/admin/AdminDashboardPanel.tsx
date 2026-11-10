@@ -166,7 +166,7 @@ export function AdminDashboardPanel() {
             Trusted Lenders
           </span>
           <p className="text-2xl font-bold text-emerald-800 mt-1">{trustedLendersCount}</p>
-          <p className="text-xs text-stone-500 mt-0.5">Community-endorsed</p>
+          <p className="text-xs text-stone-500 mt-0.5">Admin-endorsed</p>
         </Card>
 
         <Card className="p-4 bg-white border-stone-200">
@@ -189,11 +189,10 @@ export function AdminDashboardPanel() {
       {/* Action Notification Alert */}
       {feedback && (
         <div
-          className={`rounded-xl border p-4 text-sm flex items-center justify-between ${
-            feedback.type === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-red-200 bg-red-50 text-red-800"
-          }`}
+          className={`rounded-xl border p-4 text-sm flex items-center justify-between ${feedback.type === "success"
+            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+            : "border-red-200 bg-red-50 text-red-800"
+            }`}
         >
           <span>{feedback.text}</span>
           <button
@@ -209,44 +208,40 @@ export function AdminDashboardPanel() {
       <div className="flex border-b border-stone-200">
         <button
           onClick={() => setActiveTab("members")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "members"
-              ? "border-emerald-800 text-emerald-900"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
+          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "members"
+            ? "border-emerald-800 text-emerald-900"
+            : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
         >
-          Members & Trusted Lenders ({totalUsers})
+          Members  ({totalUsers})
         </button>
 
         <button
           onClick={() => setActiveTab("listings")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "listings"
-              ? "border-emerald-800 text-emerald-900"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
+          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "listings"
+            ? "border-emerald-800 text-emerald-900"
+            : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
         >
           Listings Moderation ({totalTools})
         </button>
 
         <button
           onClick={() => setActiveTab("loans")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "loans"
-              ? "border-emerald-800 text-emerald-900"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
+          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "loans"
+            ? "border-emerald-800 text-emerald-900"
+            : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
         >
           Global Loans Oversight ({loans?.length ?? 0})
         </button>
 
         <button
           onClick={() => setActiveTab("automations")}
-          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${
-            activeTab === "automations"
-              ? "border-emerald-800 text-emerald-900"
-              : "border-transparent text-stone-500 hover:text-stone-800"
-          }`}
+          className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors cursor-pointer ${activeTab === "automations"
+            ? "border-emerald-800 text-emerald-900"
+            : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
         >
           Automation Logs ({automationEvents?.length ?? 0})
         </button>
@@ -457,11 +452,10 @@ export function AdminDashboardPanel() {
                   <button
                     key={st}
                     onClick={() => setLoanStatusFilter(st)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer capitalize ${
-                      loanStatusFilter === st
-                        ? "bg-emerald-900 text-white"
-                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                    }`}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer capitalize ${loanStatusFilter === st
+                      ? "bg-emerald-900 text-white"
+                      : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                      }`}
                   >
                     {st}
                   </button>
