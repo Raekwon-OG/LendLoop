@@ -360,10 +360,26 @@ export function AdminDashboardPanel() {
                     {tools.map((tool) => (
                       <tr key={tool._id} className="hover:bg-stone-50/50">
                         <td className="py-3 px-4">
-                          <p className="font-semibold text-stone-900">{tool.title}</p>
-                          <p className="text-xs text-stone-500 line-clamp-1">
-                            {tool.description}
-                          </p>
+                          <div className="flex items-center gap-3">
+                            {tool.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={tool.imageUrl}
+                                alt={tool.title}
+                                className="h-10 w-10 rounded-lg object-cover border border-stone-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-sm shrink-0">
+                                🛠️
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-stone-900">{tool.title}</p>
+                              <p className="text-xs text-stone-500 line-clamp-1">
+                                {tool.description}
+                              </p>
+                            </div>
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-stone-600">{tool.category}</td>
                         <td className="py-3 px-4">
@@ -371,7 +387,7 @@ export function AdminDashboardPanel() {
                           <p className="text-xs text-stone-400">{tool.ownerEmail}</p>
                           {tool.isOwnerTrusted && (
                             <span className="text-[10px] text-emerald-800 font-bold block mt-0.5">
-                              ⭐ Trusted
+                              ✓ Trusted Lender
                             </span>
                           )}
                         </td>
@@ -389,7 +405,23 @@ export function AdminDashboardPanel() {
                           </Badge>
                         </td>
                         <td className="py-3 px-4 text-stone-600">{tool.condition}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-right space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleToggleTrusted(
+                                tool.ownerId,
+                                tool.isOwnerTrusted,
+                                tool.ownerName
+                              )
+                            }
+                            disabled={processingId === tool.ownerId}
+                          >
+                            {tool.isOwnerTrusted
+                              ? "Revoke Trusted"
+                              : "★ Mark Trusted"}
+                          </Button>
                           <Button
                             variant="danger"
                             size="sm"
