@@ -13,9 +13,9 @@ LendLoop is a neighborhood equipment-sharing cooperative built as a modern, full
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Authentication**: [Clerk](https://clerk.com/) (`@clerk/nextjs`)
-- **Database & Reactive Backend**: [Convex](https://www.convex.dev/) (`convex`)
+- **Database & Reactive Backend**: [Convex](https://www.convex.dev/) (`convex` with native Convex File Storage for equipment photos)
 - **Workflow Automation**: [n8n](https://n8n.io/) (Self-hosted via Docker Compose or cloud deployable)
-- **Testing**: [Vitest](https://vitest.dev/) (78 automated test cases covering RBAC, borrowing lifecycle, HMAC security, data minimization, and idempotency)
+- **Testing**: [Vitest](https://vitest.dev/) (87 automated test cases covering RBAC, borrowing lifecycle, HMAC security, data minimization, error formatting, and idempotency)
 - **Validation**: [Zod](https://zod.dev/)
 
 ---
@@ -39,23 +39,23 @@ LendLoop implements strict Role-Based Access Control (RBAC) enforced directly in
 
 ### How to Make a User an Administrator
 
-LendLoop supports two straightforward methods for assigning the `admin` role:
+LendLoop supports three straightforward methods for assigning the `admin` role:
 
-1. **Initial Admin Provisioning (Bootstrapping via Convex Dashboard)**:
-   - When users register through Clerk, they are automatically synchronized to the Convex `users` table with the default `"user"` role.
-   - To bootstrap your initial administrator:
+1. **Automatic First-User Bootstrap**:
+   - The very first user to register in a fresh database is automatically provisioned with `role: "admin"` and `isTrustedLender: true` by `users:syncUser`.
+
+2. **Manual Provisioning via Convex Dashboard**:
+   - To manually elevate any user via the database console:
      1. Open your [Convex Dashboard](https://dashboard.convex.dev/) and select your project (`lendloop`).
      2. In the left navigation, click **Data** &rarr; select the **`users`** table.
      3. Click on the document of the user you want to elevate.
      4. Change the `role` field from `"user"` to `"admin"` and save.
-     5. Refresh your LendLoop application. You will now see the **Admin Panel** link in the navigation header.
+     5. The **Admin Panel** link in the sidebar and inline admin controls will appear automatically in real time.
 
-2. **In-App Promotion (via LendLoop Admin Dashboard)**:
-   - Once at least one administrator exists, any admin can promote or manage roles directly in the web UI without needing database consoles:
-     1. Navigate to `/dashboard/admin` (or click **Admin Panel** in the top navigation).
-     2. Open the **"Members & Roles"** tab.
-     3. Locate any neighbor in the community list and click **"Promote to Admin"** (or **"Revoke Admin"**).
-     4. You can also grant or revoke the **"Trusted Lender"** designation from this same panel.
+3. **In-App Promotion & Trusted Lender Designation (via Admin Panel or Browse Catalog)**:
+   - Once logged in as an administrator, you can manage roles and Trusted Lender badges directly in the UI:
+     - **Admin Panel (`/dashboard/admin`)**: Open the **Members & Roles** or **Listings Moderation** tab to click **Grant Trusted** / **Revoke Trusted**, **Make Admin**, or **Remove Listing**, and inspect **All Loans**.
+     - **Browse Tools (`/dashboard/tools`)**: Use the inline admin bar at the bottom of any tool card to click **★ Mark Trusted Lender** or **Remove** on the spot.
 
 ---
 
@@ -333,7 +333,7 @@ Open [http://localhost:3000](http://localhost:3000) to view LendLoop.
 
 ## Running the Automated Test Suite
 
-LendLoop includes 78 unit and integration tests across 7 test files:
+LendLoop includes 87 unit and integration tests across 8 test files:
 
 ```bash
 # Run all tests once

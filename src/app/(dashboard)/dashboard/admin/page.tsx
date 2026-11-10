@@ -1,11 +1,11 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
-import { requireAdminUser } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { AdminDashboardPanel } from "@/components/admin/AdminDashboardPanel";
 
 export default async function AdminPage() {
-  await requireAdminUser();
+  await requireAuth();
 
   return (
     <div className="space-y-6">
@@ -16,7 +16,7 @@ export default async function AdminPage() {
               <CardTitle className="text-xl font-bold text-stone-900">
                 Community Administration Panel
               </CardTitle>
-              <InfoTooltip text="Manage community members, moderate equipment listings, and designate Trusted Lenders." />
+              <InfoTooltip text="Manage community members, mark lenders as Trusted Lenders, moderate any equipment listing, and inspect all loans." />
             </div>
             <Badge variant="accent">Administrator Access</Badge>
           </div>

@@ -1,15 +1,24 @@
+"use client";
+
 import Link from "next/link";
-import { getCurrentUser, getUserRole } from "@/lib/auth";
+import { useUser } from "@clerk/nextjs";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 
-export default async function DashboardPage() {
-  const user = await getCurrentUser();
-  const role = await getUserRole();
+export default function DashboardPage() {
+  const { user } = useUser();
+  const convexUser = useQuery(api.users.getCurrentUser);
 
-  const greetingName = user?.firstName ?? user?.username ?? "Neighbor";
+  const isAdmin =
+    convexUser?.role === "admin" || user?.publicMetadata?.role === "admin";
+  const isTrustedLender = Boolean(convexUser?.isTrustedLender);
+
+  const greetingName =
+    convexUser?.name ?? user?.firstName ?? user?.username ?? "Neighbor";
 
   return (
     <div className="space-y-6">
@@ -20,12 +29,22 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold tracking-tight text-stone-900">
               Welcome back, {greetingName}
             </h1>
-            <Badge variant={role === "admin" ? "accent" : "neutral"}>
-              {role === "admin" ? "Administrator" : "Community Member"}
+            <Badge variant={isAdmin ? "accent" : "neutral"}>
+              {isAdmin ? "Administrator" : "Community Member"}
             </Badge>
+            {isTrustedLender && (
+              <Badge variant="available">✓ Trusted Lender</Badge>
+            )}
             <InfoTooltip text="Manage your listed tools, incoming reservation requests, and borrowed items from one place." />
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/dashboard/admin">
+                <Button variant="outline" size="sm" className="border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100">
+                  🛡️ Admin Panel
+                </Button>
+              </Link>
+            )}
             <Link href="/dashboard/tools">
               <Button variant="outline" size="sm">
                 Browse Catalog
@@ -141,7 +160,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {role === "admin" && (
+      {isAdmin && (
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -151,7 +170,7 @@ export default async function DashboardPage() {
                   <InfoTooltip text="Full administrative oversight to view all active community loans, designate trusted lenders, and moderate listings." />
                 </div>
                 <CardDescription className="text-amber-700">
-                  Moderation, loan audits, and trusted lender badges.
+                  Mark lenders as Trusted Lenders, remove any listing, and inspect all loans.
                 </CardDescription>
               </div>
               <Badge variant="accent">Admin Only</Badge>
