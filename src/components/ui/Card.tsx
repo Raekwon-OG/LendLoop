@@ -52,8 +52,12 @@ export function CardContent({
   children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  // If custom padding is specified in className (e.g. p-5, p-6, pt-5), don't force pt-0
+  const hasCustomPadding = /\bp[a-z]?-|\bp-\d/.test(className);
+  const defaultClasses = hasCustomPadding ? "" : "p-6 pt-0";
+
   return (
-    <div className={`p-6 pt-0 ${className}`} {...props}>
+    <div className={`${defaultClasses} ${className}`.trim()} {...props}>
       {children}
     </div>
   );

@@ -279,8 +279,8 @@ export default function IncomingRequestsPage() {
 
               return (
                 <Card key={req._id}>
-                  <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="space-y-1">
+                  <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
                           {req.toolCategory}
