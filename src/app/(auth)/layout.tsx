@@ -8,11 +8,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-stone-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-6 flex w-full max-w-md justify-start">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-stone-50 px-4 py-12 sm:px-6 lg:px-8">
+      {/* Top Left Navigation Header */}
+      <div className="fixed top-6 left-6 z-10">
         <Link
           href="/"
-          className="group inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-xs font-medium text-stone-600 shadow-2xs transition-all hover:border-emerald-800/30 hover:bg-emerald-50/60 hover:text-emerald-900"
+          className="group inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/90 px-3.5 py-1.5 text-xs font-medium text-stone-600 shadow-xs backdrop-blur-xs transition-all hover:border-emerald-800/40 hover:bg-emerald-50/70 hover:text-emerald-900"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -30,6 +31,7 @@ export default function AuthLayout({
           Back to home
         </Link>
       </div>
+
       <div className="mb-8 text-center">
         <Link href="/" className="inline-flex items-center gap-2.5 text-2xl font-bold text-stone-900">
           <Logo size={36} />
