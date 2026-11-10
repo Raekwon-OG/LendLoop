@@ -362,4 +362,106 @@ describe("Phase 4: Tool Listings CRUD & Ownership Enforcement", () => {
       expect(tools[0]?.ownerClerkId).toBe("clerk_owner_1");
     });
   });
+
+  describe("Equipment Photo Storage & Catalog Queries", () => {
+    it("should generate a signed Convex storage upload URL for authenticated users", async () => {
+      const mockCtx = {
+        auth: {
+          getUserIdentity: async () => ({
+            tokenIdentifier: "https://clerk.accounts.dev|clerk_owner_1",
+            subject: "clerk_owner_1",
+            issuer: "https://clerk.accounts.dev",
+          }),
+        },
+        storage: {
+          generateUploadUrl: async () => "https://knowing-tiger-323.convex.cloud/api/storage/upload?token=xyz",
+        },
+      } as unknown as MutationCtx;
+
+      const { generateUploadUrl } = await import("../convex/tools");
+      const callable = generateUploadUrl as unknown as MutationCallable<
+        Record<string, never>,
+        string
+      >;
+
+      const url = await callable._handler(mockCtx, {});
+      expect(url).toContain("https://knowing-tiger-323.convex.cloud/api/storage/upload");
+    });
+
+    it("should attach imageStorageId on creation and resolve imageUrl in listCatalog", async () => {
+      let insertedTool: Record<string, unknown> | null = null;
+
+      const mockCtx = {
+        auth: {
+          getUserIdentity: async () => ({
+            tokenIdentifier: "https://clerk.accounts.dev|clerk_owner_1",
+            subject: "clerk_owner_1",
+            issuer: "https://clerk.accounts.dev",
+          }),
+        },
+        storage: {
+          getUrl: async (storageId: string) =>
+            `https://knowing-tiger-323.convex.cloud/api/storage/${storageId}`,
+        },
+        db: {
+          query: () => ({
+            withIndex: () => ({
+              unique: async () => mockOwner,
+            }),
+            collect: async () => [
+              {
+                ...mockTool,
+                imageStorageId: "storage_img_001",
+              },
+            ],
+          }),
+          get: async () => mockOwner,
+          insert: async (_table: string, doc: Record<string, unknown>) => {
+            insertedTool = doc;
+            return "tool_with_img_1";
+          },
+        },
+      } as unknown as MutationCtx;
+
+      const { create, listCatalog } = await import("../convex/tools");
+      const createCallable = create as unknown as MutationCallable<
+        {
+          title: string;
+          description: string;
+          category: string;
+          condition: "Like New" | "Good" | "Fair";
+          imageStorageId?: Id<"_storage">;
+        },
+        string
+      >;
+
+      await createCallable._handler(mockCtx, {
+        title: "Stihl Chainsaw",
+        description: "16-inch bar with protective scabbard.",
+        category: "Gardening & Yard",
+        condition: "Good",
+        imageStorageId: "storage_img_001" as unknown as Id<"_storage">,
+      });
+
+      expect(insertedTool?.["imageStorageId"]).toBe("storage_img_001");
+
+      const catalogCallable = listCatalog as unknown as QueryCallable<
+        { category?: string },
+        Array<{
+          _id: string;
+          imageUrl: string | null;
+          isOwnerTrusted: boolean;
+          ownerName: string;
+        }>
+      >;
+
+      const catalog = await catalogCallable._handler(mockCtx as unknown as QueryCtx, {});
+      expect(catalog).toHaveLength(1);
+      expect(catalog[0]?.imageUrl).toBe(
+        "https://knowing-tiger-323.convex.cloud/api/storage/storage_img_001"
+      );
+      expect(catalog[0]?.isOwnerTrusted).toBe(true);
+      expect(catalog[0]?.ownerName).toBe("Alice Owner");
+    });
+  });
 });

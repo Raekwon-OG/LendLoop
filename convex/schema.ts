@@ -38,6 +38,7 @@ export default defineSchema({
       v.literal("maintenance"),
       v.literal("archived")
     ),
+    imageStorageId: v.optional(v.id("_storage")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import {
   assertToolOwnerOrAdmin,
   requireAdmin,
@@ -9,10 +9,28 @@ import {
 } from "./lib/auth";
 
 /**
+ * Safely resolves a Convex storage ID into a public CDN URL.
+ * Gracefully returns null in unit test mocks where ctx.storage may be omitted.
+ */
+async function resolveImageUrl(
+  ctx: { storage?: { getUrl: (storageId: Id<"_storage">) => Promise<string | null> } },
+  imageStorageId?: Id<"_storage">
+): Promise<string | null> {
+  if (!imageStorageId || !ctx.storage) {
+    return null;
+  }
+  try {
+    return await ctx.storage.getUrl(imageStorageId);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Public query: Fetches community equipment currently marked as 'available'.
  *
  * Privacy & Security:
- * - Only returns public-safe summary fields (id, title, description, category, condition, status).
+ * - Only returns public-safe summary fields (id, title, description, category, condition, status, imageUrl).
  * - Does not expose owner contact details or private loan histories to unauthenticated callers.
  */
 export const getAvailable = query({
@@ -35,16 +53,70 @@ export const getAvailable = query({
     const availableTools = await toolsQuery.collect();
 
     // Map to public-safe projection
-    return availableTools.map((tool) => ({
-      _id: tool._id,
-      title: tool.title,
-      description: tool.description,
-      category: tool.category,
-      condition: tool.condition,
-      status: tool.status,
-      isAvailable: tool.status === "available",
-      createdAt: tool.createdAt,
-    }));
+    return await Promise.all(
+      availableTools.map(async (tool) => ({
+        _id: tool._id,
+        title: tool.title,
+        description: tool.description,
+        category: tool.category,
+        condition: tool.condition,
+        status: tool.status,
+        isAvailable: tool.status === "available",
+        imageUrl: await resolveImageUrl(ctx, tool.imageStorageId),
+        createdAt: tool.createdAt,
+      }))
+    );
+  },
+});
+
+/**
+ * Authenticated query: Fetches all active (non-archived) community tools with availability status,
+ * filterable by category, along with lender trust badge info and resolved photo URL.
+ */
+export const listCatalog = query({
+  args: {
+    category: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    let toolsList: Doc<"tools">[];
+    if (args.category && args.category !== "All") {
+      toolsList = await ctx.db
+        .query("tools")
+        .withIndex("by_category", (q) => q.eq("category", args.category!))
+        .collect();
+    } else {
+      toolsList = await ctx.db.query("tools").collect();
+    }
+
+    const activeTools = toolsList.filter((tool) => tool.status !== "archived");
+
+    const enriched = await Promise.all(
+      activeTools.map(async (tool) => {
+        const owner = ctx.db.get
+          ? ((await ctx.db.get(tool.ownerId)) as Doc<"users"> | null)
+          : null;
+        const imageUrl = await resolveImageUrl(ctx, tool.imageStorageId);
+
+        return {
+          _id: tool._id,
+          title: tool.title,
+          description: tool.description,
+          category: tool.category,
+          condition: tool.condition,
+          status: tool.status,
+          isAvailable: tool.status === "available",
+          imageUrl,
+          ownerId: tool.ownerId,
+          ownerName: owner?.name ?? "Community Neighbor",
+          isOwnerTrusted: owner?.isTrustedLender ?? false,
+          createdAt: tool.createdAt,
+        };
+      })
+    );
+
+    return enriched.sort((a, b) => b.createdAt - a.createdAt);
   },
 });
 
@@ -85,7 +157,24 @@ export const getMyTools = query({
       .withIndex("by_owner_clerk_id", (q) => q.eq("ownerClerkId", authUser.clerkId))
       .collect();
 
-    return userTools;
+    return await Promise.all(
+      userTools.map(async (tool) => ({
+        ...tool,
+        imageUrl: await resolveImageUrl(ctx, tool.imageStorageId),
+      }))
+    );
+  },
+});
+
+/**
+ * Authenticated mutation: Generates a short-lived upload URL for Convex File Storage
+ * so users can attach equipment photos to their listings.
+ */
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+    return await ctx.storage.generateUploadUrl();
   },
 });
 
@@ -102,7 +191,10 @@ export const getToolById = query({
       return null;
     }
 
-    return tool;
+    return {
+      ...tool,
+      imageUrl: await resolveImageUrl(ctx, tool.imageStorageId),
+    };
   },
 });
 
@@ -115,6 +207,7 @@ export const create = mutation({
     description: v.string(),
     category: v.string(),
     condition: v.union(v.literal("Like New"), v.literal("Good"), v.literal("Fair")),
+    imageStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const { userRecord } = await requireCurrentUserRecord(ctx);
@@ -139,6 +232,7 @@ export const create = mutation({
       category: args.category,
       condition: args.condition,
       status: "available",
+      ...(args.imageStorageId ? { imageStorageId: args.imageStorageId } : {}),
       createdAt: now,
       updatedAt: now,
     });
@@ -166,6 +260,8 @@ export const update = mutation({
         v.literal("archived")
       )
     ),
+    imageStorageId: v.optional(v.id("_storage")),
+    removeImage: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { userRecord } = await requireCurrentUserRecord(ctx);
@@ -204,6 +300,12 @@ export const update = mutation({
 
     if (args.status !== undefined) {
       updates.status = args.status;
+    }
+
+    if (args.imageStorageId !== undefined) {
+      updates.imageStorageId = args.imageStorageId;
+    } else if (args.removeImage === true) {
+      updates.imageStorageId = undefined;
     }
 
     await ctx.db.patch(args.toolId, updates);
@@ -260,6 +362,7 @@ export const adminListAllTools = query({
         const owner = (await ctx.db.get(tool.ownerId)) as Doc<"users"> | null;
         return {
           ...tool,
+          imageUrl: await resolveImageUrl(ctx, tool.imageStorageId),
           ownerName: owner?.name ?? "Unknown Neighbor",
           ownerEmail: owner?.email ?? "",
           isOwnerTrusted: owner?.isTrustedLender ?? false,
