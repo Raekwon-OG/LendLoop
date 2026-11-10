@@ -33,6 +33,9 @@ export default function BrowseToolsDashboardPage() {
   );
 
   const categories = useQuery(api.tools.getAvailableCategories);
+  const myTools = useQuery(api.tools.getMyTools);
+
+  const myToolIds = new Set(myTools?.map((t) => t._id));
 
   const filteredTools = (tools ?? []).filter((tool) => {
     if (!searchQuery.trim()) return true;
@@ -169,35 +172,46 @@ export default function BrowseToolsDashboardPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredTools.map((tool) => (
-            <Card key={tool._id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                    {tool.category}
-                  </span>
-                  <Badge variant="available">Available</Badge>
-                </div>
-                <CardTitle className="text-lg text-stone-900">{tool.title}</CardTitle>
-                <CardDescription className="line-clamp-2 mt-1">
-                  {tool.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 mb-4">
-                  <span>Condition: <strong>{tool.condition}</strong></span>
-                  <span>Listed: {new Date(tool.createdAt).toLocaleDateString()}</span>
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setSelectedToolForBorrow(tool)}
-                >
-                  Request to Borrow
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {filteredTools.map((tool) => {
+            const isMyTool = myToolIds.has(tool._id);
+
+            return (
+              <Card key={tool._id} className="flex flex-col justify-between hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+                      {tool.category}
+                    </span>
+                    <Badge variant="available">Available</Badge>
+                  </div>
+                  <CardTitle className="text-lg text-stone-900">{tool.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 mt-1">
+                    {tool.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500 mb-4">
+                    <span>Condition: <strong>{tool.condition}</strong></span>
+                    <span>Listed: {new Date(tool.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {isMyTool ? (
+                    <div className="flex items-center justify-center gap-1.5 rounded-lg border border-stone-200 bg-stone-50 py-2 px-3 text-xs font-medium text-stone-500">
+                      <span>🔒</span>
+                      <span>Your Equipment (Owner)</span>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setSelectedToolForBorrow(tool)}
+                    >
+                      Request to Borrow
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 

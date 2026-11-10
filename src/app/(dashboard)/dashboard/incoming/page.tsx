@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
+import { formatConvexError } from "@/lib/errors";
 
 type IncomingStatusFilter = "pending" | "All" | "approved" | "declined";
 
@@ -42,7 +43,7 @@ export default function IncomingRequestsPage() {
       console.error("Failed to approve request:", err);
       setActionMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to approve request.",
+        text: formatConvexError(err, "Failed to approve request. Please try again."),
       });
     } finally {
       setProcessingId(null);
@@ -67,7 +68,7 @@ export default function IncomingRequestsPage() {
       console.error("Failed to decline request:", err);
       setActionMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to decline request.",
+        text: formatConvexError(err, "Failed to decline request. Please try again."),
       });
     } finally {
       setProcessingId(null);
@@ -92,7 +93,7 @@ export default function IncomingRequestsPage() {
       console.error("Failed to return loan:", err);
       setActionMessage({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to mark item returned.",
+        text: formatConvexError(err, "Failed to mark item returned. Please try again."),
       });
     } finally {
       setProcessingId(null);

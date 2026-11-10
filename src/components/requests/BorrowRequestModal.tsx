@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { formatConvexError } from "@/lib/errors";
 
 interface BorrowRequestModalProps {
   isOpen: boolean;
@@ -94,9 +95,10 @@ function RequestFormContent({ tool, onClose, onSuccess }: RequestFormContentProp
     } catch (err: unknown) {
       console.error("[BorrowRequestModal] Error:", err);
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to submit borrow request. Please try again."
+        formatConvexError(
+          err,
+          "Failed to submit borrow request. Please verify the dates and try again."
+        )
       );
     } finally {
       setIsSubmitting(false);
@@ -129,8 +131,9 @@ function RequestFormContent({ tool, onClose, onSuccess }: RequestFormContentProp
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-          {error}
+        <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-3.5 text-xs text-red-800 flex items-start gap-2.5">
+          <span className="text-base leading-none text-red-600">⚠️</span>
+          <div className="flex-1 font-medium leading-relaxed">{error}</div>
         </div>
       )}
 

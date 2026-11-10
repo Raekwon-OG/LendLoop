@@ -37,6 +37,26 @@ LendLoop implements strict Role-Based Access Control (RBAC) enforced directly in
 | Designate members with "Trusted Lender" badge | ❌ | ❌ | ✅ |
 | Promote members to administrator role | ❌ | ❌ | ✅ |
 
+### How to Make a User an Administrator
+
+LendLoop supports two straightforward methods for assigning the `admin` role:
+
+1. **Initial Admin Provisioning (Bootstrapping via Convex Dashboard)**:
+   - When users register through Clerk, they are automatically synchronized to the Convex `users` table with the default `"user"` role.
+   - To bootstrap your initial administrator:
+     1. Open your [Convex Dashboard](https://dashboard.convex.dev/) and select your project (`lendloop`).
+     2. In the left navigation, click **Data** &rarr; select the **`users`** table.
+     3. Click on the document of the user you want to elevate.
+     4. Change the `role` field from `"user"` to `"admin"` and save.
+     5. Refresh your LendLoop application. You will now see the **Admin Panel** link in the navigation header.
+
+2. **In-App Promotion (via LendLoop Admin Dashboard)**:
+   - Once at least one administrator exists, any admin can promote or manage roles directly in the web UI without needing database consoles:
+     1. Navigate to `/dashboard/admin` (or click **Admin Panel** in the top navigation).
+     2. Open the **"Members & Roles"** tab.
+     3. Locate any neighbor in the community list and click **"Promote to Admin"** (or **"Revoke Admin"**).
+     4. You can also grant or revoke the **"Trusted Lender"** designation from this same panel.
+
 ---
 
 ## System Architecture
@@ -125,25 +145,100 @@ Setting up LendLoop requires connecting three services: **Clerk** (auth), **Conv
 
 ### 3. n8n Automation Workflows Setup
 
-#### Local Setup (Docker Compose)
-1. In your project root, open the `n8n` directory:
+#### Generic Deployment & Workflow Setup (Any Cloud Container or Docker Host)
+
+You can run n8n on any modern container host (Docker, Kubernetes, Render, Railway, Fly.io, or VPS) using the latest official image:
+
+1. **Deploy the n8n Container**:
+   - Image: `docker.n8n.io/n8nio/n8n:latest` (or Docker Hub: `n8nio/n8n:latest`).
+   - Expose port `5678`.
+   - Mount a persistent volume at `/home/node/.n8n` to preserve user credentials, workflow states, and encryption keys across restarts.
+
+2. **Configure Essential Environment Variables**:
+   | Variable | Value / Recommended Setting | Purpose |
+   | :--- | :--- | :--- |
+   | `N8N_PORT` | `5678` | Internal web server port |
+   | `N8N_PROTOCOL` | `https` (or `http` behind a TLS reverse proxy) | URL scheme |
+   | `N8N_HOST` | Your public domain (e.g. `n8n.yourdomain.com`) | Host header validation |
+   | `N8N_WEBHOOK_URL` | `https://<your-n8n-domain>/` | Base URL emitted for webhook triggers |
+   | `N8N_WEBHOOK_SECRET` | Shared secret string (e.g. `openssl rand -hex 24`) | Verifies HMAC-SHA256 signatures with Convex |
+   | `CONVEX_SITE_URL` | `https://<your-deployment>.convex.site` | Target for polling overdue loans and reminder write-backs |
+   | `NODE_FUNCTION_ALLOW_BUILTIN` | `crypto,buffer,util` | Grants Code nodes access to Node.js crypto primitives |
+
+3. **Import LendLoop Workflows**:
+   - Open your n8n web UI and complete the initial owner account creation.
+   - Navigate to **Workflows** &rarr; **Add Workflow** &rarr; **Import from File**.
+   - Import all three workflows located in `n8n/workflows/`:
+     - `request_notification.json` — Listens on `/webhook/borrow-request`, verifies HMAC signature, routes `request_created` and `request_status_changed` notifications.
+     - `overdue_reminders.json` — Scheduled cron (daily at 09:00), polls `/api/overdue-loans` on Convex with data minimization, and idempotently records reminder write-backs with HMAC.
+     - `error_handler.json` — Universal Error Trigger workflow capturing execution errors and logging incident reports.
+   - Toggle each workflow switch to **Active**.
+
+4. **Connect the Webhook to LendLoop**:
+   - In the **Borrow Request Notifications** workflow, double-click the **Webhook Trigger** node.
+   - Copy the **Production URL** (`https://<your-n8n-domain>/webhook/borrow-request`).
+   - Add this URL as `N8N_WEBHOOK_URL` in Convex Dashboard and Vercel.
+
+---
+
+#### Local Development Setup (Docker Compose)
+
+For local development without cloud hosting, run n8n locally via Docker Compose:
+
+1. Open the `n8n/` directory:
    ```bash
    cd n8n
    cp .env.example .env
    ```
-2. Ensure `.env` contains:
-   - `N8N_WEBHOOK_SECRET`: Must match the exact same secret set in Convex above.
-   - `CONVEX_SITE_URL`: `http://localhost:3000` (or `https://<your-deployment>.convex.site`).
-3. Start n8n:
+2. Verify `.env` contains:
+   - `N8N_WEBHOOK_SECRET`: Matches the value configured in your local Convex backend.
+   - `CONVEX_SITE_URL`: `https://<your-convex-deployment>.convex.site` (or local HTTP tunnel).
+3. Start the container:
    ```bash
    docker compose up -d
    ```
-4. Open [http://localhost:5678](http://localhost:5678) in your browser.
-5. Create your initial admin account.
-6. Import the workflows:
-   - Go to **Workflows** &rarr; **Import from File**.
-   - Import `n8n/workflows/request_notification.json`, `n8n/workflows/overdue_reminders.json`, and `n8n/workflows/error_handler.json`.
-   - In each workflow, toggle the switch in the top right to **Active**.
+4. Access the web UI at [http://localhost:5678](http://localhost:5678), create your admin account, and import the workflows from `n8n/workflows/`.
+
+---
+
+#### Reference Cloud Deployment: Northflank (with Memory Constraints & Versioning)
+
+In our live environment, n8n is deployed on [Northflank](https://app.northflank.com/) at:
+**`https://n8n--lendloop--p4x9rr7dxz5f.code.run/`**
+
+##### ⚠️ Important Constraints & Memory Considerations:
+- **Free / Micro Tier RAM Limit (512MB)**:
+  - The standard `n8nio/n8n:latest` (v2.x) runs a dual-process architecture (the main web server plus an isolated task runner process). This defaults to ~480MB memory consumption at idle, triggering `OOMKilled` (Out Of Memory) container crashes on 512MB tiers.
+  - **Recommended Version for 512MB Tiers**: We use **`n8nio/n8n:1.76.1`** LTS. Version 1.76 runs as a lean single process idling around ~190MB RAM.
+  - Add `NODE_OPTIONS=--max-old-space-size=350` to restrict V8 garbage collection thresholds beneath the container ceiling.
+- **Docker Registry Compatibility**:
+  - Northflank requires approved public image paths. Use the Docker Hub image path `n8nio/n8n:1.76.1` (or `n8nio/n8n:latest` on paid plans with &ge; 1GB RAM) rather than `docker.n8n.io/...`.
+- **Workflow Schema Compatibility**:
+  - The workflow JSON definitions in `n8n/workflows/` use universal `if` nodes (v1) and root-level HTTP retry parameters, ensuring 100% clean imports across both n8n `1.76.x` and `2.x+`.
+
+##### Step-by-Step Northflank Service Setup:
+1. Log in to [Northflank](https://app.northflank.com/) and create a project (e.g. `lendloop-automation`).
+2. Click **Create Service** &rarr; **Deployment Service** &rarr; **External image**.
+3. Image path: `n8nio/n8n:1.76.1` (or `n8nio/n8n:latest` if your instance has &ge; 1GB RAM).
+4. Under **Ports**, add port `5678` with HTTP protocol and enable public access.
+5. Under **Volumes**, attach a persistent volume (1 GB or larger) mounted at `/home/node/.n8n`.
+6. Under **Environment Variables**, configure:
+   ```env
+   N8N_LISTEN_ADDRESS=0.0.0.0
+   N8N_PORT=5678
+   N8N_PROTOCOL=http
+   N8N_HOST=n8n--lendloop--p4x9rr7dxz5f.code.run
+   N8N_EDITOR_BASE_URL=https://n8n--lendloop--p4x9rr7dxz5f.code.run
+   N8N_WEBHOOK_URL=https://n8n--lendloop--p4x9rr7dxz5f.code.run/
+   N8N_PROXY_HOPS=1
+   N8N_RUNNERS_GRANT_TOKEN_TTL=120
+   N8N_DIAGNOSTICS_ENABLED=false
+   NODE_OPTIONS=--max-old-space-size=350
+   NODE_FUNCTION_ALLOW_BUILTIN=crypto,buffer,util
+   N8N_WEBHOOK_SECRET=<your-shared-hmac-secret>
+   CONVEX_SITE_URL=https://knowing-tiger-323.convex.site
+   ```
+7. Click **Deploy Service**. Once running, access the URL, create the owner account, and import the 3 workflows from `n8n/workflows/`.
 
 ---
 
@@ -195,30 +290,6 @@ Go to **Vercel Dashboard** &rarr; Your Project &rarr; **Settings** &rarr; **Envi
      2. Convex Dashboard &rarr; Settings &rarr; Environment Variables (`N8N_WEBHOOK_SECRET`)
      3. n8n Environment Variables (`N8N_WEBHOOK_SECRET`)
 
----
-
-## Deploying n8n on Northflank (`https://app.northflank.com/`)
-
-1. Log in to [Northflank](https://app.northflank.com/) and create a new **Project** (e.g. `lendloop-automation`).
-2. Click **Create Service** &rarr; **Deployment Service**.
-3. Select **Deployment source**: **External image**.
-4. Set image path: `n8nio/n8n:latest`.
-5. Under **Ports**, add port `5678` with HTTP protocol and enable public access.
-6. Under **Volumes**, attach a persistent volume (1 GB or larger) mounted at `/home/node/.n8n`.
-7. Under **Environment Variables**, add:
-   - `N8N_LISTEN_ADDRESS`: `0.0.0.0`
-   - `N8N_HOST`: Your Northflank public domain (e.g., `n8n--lendloop.code.run`)
-   - `N8N_PORT`: `5678`
-   - `N8N_PROTOCOL`: `http`
-   - `N8N_EDITOR_BASE_URL`: `https://<your-northflank-n8n-domain>`
-   - `N8N_WEBHOOK_URL`: `https://<your-northflank-n8n-domain>/`
-   - `N8N_PROXY_HOPS`: `1`
-   - `N8N_RUNNERS_GRANT_TOKEN_TTL`: `120`
-   - `N8N_DIAGNOSTICS_ENABLED`: `false`
-   - `N8N_WEBHOOK_SECRET`: Your shared HMAC secret string
-   - `CONVEX_SITE_URL`: `https://<your-convex-deployment>.convex.site`
-   - `NODE_FUNCTION_ALLOW_BUILTIN`: `crypto,buffer,util`
-8. Click **Deploy**. Once running, open the n8n interface and import the three workflows from `n8n/workflows/`.
 
 ---
 

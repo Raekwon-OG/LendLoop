@@ -5,6 +5,7 @@ import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Button } from "@/components/ui/Button";
+import { formatConvexError } from "@/lib/errors";
 import { TOOL_CATEGORIES, type ToolCategory, type ToolCondition, type ToolStatus } from "@/types";
 
 interface ToolToEdit {
@@ -93,7 +94,7 @@ function ToolForm({ toolToEdit, onClose, onSuccess }: ToolFormProps) {
       onClose();
     } catch (err: unknown) {
       console.error("[ToolListingModal] Mutation error:", err);
-      setError(err instanceof Error ? err.message : "Failed to save tool listing.");
+      setError(formatConvexError(err, "Failed to save tool listing. Please try again."));
     } finally {
       setIsSubmitting(false);
     }

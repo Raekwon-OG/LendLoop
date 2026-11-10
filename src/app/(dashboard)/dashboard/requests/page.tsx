@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
+import { formatConvexError } from "@/lib/errors";
 
 type RequestStatusFilter = "All" | "pending" | "approved" | "declined" | "cancelled";
 
@@ -31,7 +32,7 @@ export default function MyRequestsPage() {
       await cancelMutation({ requestId: requestId as Id<"borrowRequests"> });
     } catch (err) {
       console.error("Failed to cancel request:", err);
-      alert("Failed to cancel request. Please try again.");
+      alert(formatConvexError(err, "Failed to cancel request. Please try again."));
     } finally {
       setCancellingId(null);
     }

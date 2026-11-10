@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { formatTimeAgo } from "@/lib/date";
+import { formatConvexError } from "@/lib/errors";
 
 type AdminTab = "members" | "listings" | "loans" | "automations";
 
@@ -57,7 +58,7 @@ export function AdminDashboardPanel() {
       console.error(err);
       setFeedback({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to update Trusted Lender status.",
+        text: formatConvexError(err, "Failed to update Trusted Lender status."),
       });
     } finally {
       setProcessingId(null);
@@ -89,7 +90,7 @@ export function AdminDashboardPanel() {
       console.error(err);
       setFeedback({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to change user role.",
+        text: formatConvexError(err, "Failed to change user role."),
       });
     } finally {
       setProcessingId(null);
@@ -115,7 +116,7 @@ export function AdminDashboardPanel() {
       console.error(err);
       setFeedback({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to remove listing.",
+        text: formatConvexError(err, "Failed to remove listing."),
       });
     } finally {
       setProcessingId(null);
@@ -141,7 +142,7 @@ export function AdminDashboardPanel() {
       console.error(err);
       setFeedback({
         type: "error",
-        text: err instanceof Error ? err.message : "Failed to mark loan as returned.",
+        text: formatConvexError(err, "Failed to mark loan as returned."),
       });
     } finally {
       setProcessingId(null);

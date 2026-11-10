@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTooltip } from "@/components/ui/InfoTooltip";
 import { ToolListingModal } from "@/components/tools/ToolListingModal";
+import { formatConvexError } from "@/lib/errors";
 import type { ToolCondition, ToolStatus } from "@/types";
 
 export default function MyListingsPage() {
@@ -55,7 +56,7 @@ export default function MyListingsPage() {
       await removeToolMutation({ toolId: toolId as Id<"tools"> });
     } catch (err: unknown) {
       console.error("[MyListingsPage] Delete error:", err);
-      alert(err instanceof Error ? err.message : "Failed to remove listing.");
+      alert(formatConvexError(err, "Failed to remove listing. Please try again."));
     }
   };
 
@@ -68,7 +69,7 @@ export default function MyListingsPage() {
       });
     } catch (err: unknown) {
       console.error("[MyListingsPage] Status update error:", err);
-      alert(err instanceof Error ? err.message : "Failed to update status.");
+      alert(formatConvexError(err, "Failed to update equipment status. Please try again."));
     }
   };
 
